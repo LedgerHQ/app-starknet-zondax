@@ -1,0 +1,148 @@
+name: "test/build"
+on:
+  - push
+
+jobs:
+  configure:
+    runs-on: ubuntu-latest
+    outputs:
+      uid_gid: ${{ steps.get-user.outputs.uid_gid }}
+    steps:
+      - id: get-user
+        run: echo "::set-output name=uid_gid::$(id -u):$(id -g)"
+
+  checks:
+    runs-on: ubuntu-latest
+    container:
+      image: zondax/rust-ci:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: show versions
+        run: |
+          rustup show
+      - name: rustfmt
+        run: |
+          cargo fmt --version
+          cargo fmt -- --check
+      - name: clippy
+        run: |
+          cargo clippy --version
+          cargo clippy --all-targets
+
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: zondax/rust-ci:latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+      - name: Cache/restore Cargo dependencies
+        uses: actions/cache@v1
+        with:
+          path: ./app/.cargo
+          key: ${{ runner.os }}-${{ hashFiles('./rust/Cargo.lock') }}
+      - name: run rust tests
+        run: make rust_test
+
+  build_ledger:
+    needs: configure
+    runs-on: ubuntu-latest
+    container:
+      image: zondax/builder-bolos:latest
+      options: --user ${{ needs.configure.outputs.uid_gid }}
+    env:
+      BOLOS_ENV: /opt/bolos
+      HOME: /home/zondax_circle
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Cache/restore Cargo dependencies
+        uses: actions/cache@v1
+        with:
+          path: ./app/.cargo
+          key: ${{ runner.os }}-${{ hashFiles('./rust/Cargo.lock') }}
+
+      - name: Build Nano S apps
+        shell: bash -l {0}
+        env:
+          BOLOS_SDK: ${{ github.workspace }}/deps/nanos-secure-sdk
+        run: |
+          source $HOME/.cargo/env
+          make build
+      - name: Build Nano X apps
+        shell: bash -l {0}
+        env:
+          BOLOS_SDK: ${{ github.workspace }}/deps/nanox-secure-sdk
+        run: |
+          source $HOME/.cargo/env
+          make clean
+          make build
+
+      - name: Upload elfs
+        uses: actions/upload-artifact@v2
+        with:
+          name: app-elfs
+          path: build/output/*.elf
+          if-no-files-found: error
+
+      - name: Upload installers
+        uses: actions/upload-artifact@v2
+        with:
+          name: app-installers
+          path: build/pkg/*.sh
+          if-no-files-found: error
+
+  test_zemu:
+    needs: [ build_ledger ]
+    if: ${{! contains(toJSON(github.event.commits.*.message), '[skip-zemu]')}}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+
+      - name: Download app elfs
+        uses: actions/download-artifact@v2
+        with:
+          name: app-elfs
+          path: build/output
+
+      - run: sudo apt-get update -y && sudo apt-get install -y libusb-1.0.0 libudev-dev
+
+      - name: Install node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14.17.0'
+
+      - name: Install yarn
+        run: npm install -g yarn
+
+      - name: Build/Install build js deps
+        run: |
+          export PATH=~/.cargo/bin:$PATH
+          make zemu_install
+      - name: Run zemu tests
+        run: |
+          export PATH=~/.cargo/bin:$PATH
+          make zemu_test
+
+      - name: Tar Zemu snapshots
+        if: always()
+        run: tar -cvf snapshots_tmp.tar ./zemu/snapshots-tmp
+      - name: Upload tmp snapshots
+        if: always()
+        uses: actions/upload-artifact@v2
+        with:
+          name: snapshots-tmp
+          path: snapshots_tmp.tar
+          #we don't need these snapshots for very long
+          retention-days: 3

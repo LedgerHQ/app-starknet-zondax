@@ -1,0 +1,35 @@
+[package]
+name = "template-app"
+version = "0.1.0"
+edition = "2018"
+authors = ["Zondax <hello@zondax.ch>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[lib]
+name = "rslib"
+crate-type = ["staticlib", "rlib"]
+
+[features]
+dev = []
+derive-debug = []
+default = ["derive-debug"]
+
+[dependencies]
+bolos = { git = "https://github.com/Zondax/ledger-rust" }
+zemu-sys = { git = "https://github.com/Zondax/ledger-rust" }
+
+no-std-compat = { version = "0.4" }
+cfg-if = "1.0.0"
+git-testament = { git = "https://github.com/Zondax/git-testament", branch = "fix/cve-2020-26235", version = "0.2.1", default-features = false }
+
+template-app-derive = { path = "../app-derive" }
+
+[target.thumbv6m-none-eabi.dev-dependencies]
+panic-halt = "0.2.0"
+
+[dev-dependencies]
+no-std-compat = { version = "0.4", features = ["std"] }
+serial_test = "0.5"
+zuit = { git = "https://github.com/Zondax/ledger-rust" }
+bolos = { git = "https://github.com/Zondax/ledger-rust", features = ["derive-debug"] }

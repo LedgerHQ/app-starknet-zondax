@@ -1,0 +1,39 @@
+name: "Create release"
+on:
+  workflow_run:
+    workflows: ["test/build"]
+    branches: [main]
+    types:
+      - completed
+
+jobs:
+  create_release:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install python dependencies
+        run: pip install ledgerblue
+
+      - name: Download installers
+        #we use this since it allows us to get artifacts from other workflows
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: main.yaml
+          commit: ${{ github.event.push.head.sha }}
+          name: app-installers
+          path: build/pkg
+
+      - name: Retrieve version
+        id: vars
+        run: echo ::set-output name=version::$(bash ./build/pkg/installer_s.sh version)
+
+      - name: Create release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          files: build/pkg/*
+          tag_name: ${{ steps.vars.outputs.version }}
+          draft: false
+          prerelease: false

@@ -1,0 +1,6 @@
+# Major
+APPVERSION_M=0
+# Minor
+APPVERSION_N=0
+# Patch
+APPVERSION_P=1

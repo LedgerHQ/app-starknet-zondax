@@ -1,0 +1,17 @@
+[package]
+name = "hfuzz"
+authors = ["Zondax <hello@zondax.ch>"]
+edition = "2018"
+version = "0.0.1"
+publish = false
+
+[dependencies]
+honggfuzz = "0.5"
+
+#zemu-sys = { git = "https://github.com/Zondax/ledger-rust" }
+zemu-sys = { path = "../tmp-vendor/zemu" }
+ledger-app = { default-features = false, path = "../app", package = "template-app" }
+
+[[bin]]
+name = "apdu"
+path = "apdu.rs"
