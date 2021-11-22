@@ -1,10 +1,10 @@
 import Zemu from '@zondax/zemu'
-import TemplateApp from '@zondax/ledger-template-app'
+import StarkwareApp from '@zondax/ledger-starkware-app'
 import path from 'path'
 
 const APP_PATH = path.resolve('../build/output/app_s.elf')
 const CLA = 0x80
-const APP_DERIVATION = "m/44'/0'/0'/0'"
+const APP_DERIVATION = "m/2645'/579218131'/0'/0'"
 
 const seed = 'equip will roof matter pink blind book anxiety banner elbow sun young'
 const SIM_OPTIONS = {
@@ -49,7 +49,7 @@ async function main() {
 
   try {
     await sim.start(SIM_OPTIONS)
-    const app = new TemplateApp.default(sim.getTransport())
+    const app = new StarkwareApp.default(sim.getTransport())
 
     ////////////
     /// TIP you can use zemu commands here to take the app to the point where you trigger a breakpoint

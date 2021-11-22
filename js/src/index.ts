@@ -56,7 +56,7 @@ function processGetAddrResponse(response: Buffer) {
   }
 }
 
-export default class TemplateApp {
+export default class StarkwareApp {
   transport
 
   constructor(transport: Transport) {
@@ -90,7 +90,7 @@ export default class TemplateApp {
   }
 
   async signGetChunks(path: string, message: Buffer) {
-    return TemplateApp.prepareChunks(message, serializePath(path))
+    return StarkwareApp.prepareChunks(message, serializePath(path))
   }
 
   async getVersion(): Promise<ResponseVersion> {

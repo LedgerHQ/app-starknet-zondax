@@ -16,7 +16,7 @@
 
 //! Test the version macro
 
-use template_app_derive::version;
+use starkware_app_derive::version;
 
 version!("../app/Makefile.version");
 

@@ -1,5 +1,5 @@
 import { DEFAULT_START_OPTIONS, DeviceModel } from '@zondax/zemu'
-import { Curve } from '@zondax/ledger-template-app'
+import { Curve } from '@zondax/ledger-starkware-app'
 
 const Resolve = require('path').resolve
 
@@ -21,7 +21,7 @@ export const defaultOptions = {
   custom: `-s "${APP_SEED}"`,
 }
 
-export const APP_DERIVATION = "m/44'/0'/0'/0'"
+export const APP_DERIVATION = "m/2645'/579218131'/0'/0'"
 
 type MapCartesian<T extends any[][]> = {
   [P in keyof T]: T[P] extends Array<infer U> ? U : never

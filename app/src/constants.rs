@@ -108,5 +108,5 @@ pub(crate) mod instructions {
 pub use instructions::*;
 
 pub mod version {
-    template_app_derive::version!("Makefile.version");
+    starkware_app_derive::version!("Makefile.version");
 }

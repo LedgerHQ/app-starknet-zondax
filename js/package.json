@@ -1,27 +1,28 @@
 {
-  "name": "@zondax/ledger-template-app",
+  "name": "@zondax/ledger-starkware-app",
   "author": "Zondax GmbH",
   "license": "Apache-2.0",
   "version": "0.1.0",
-  "description": "Node API for Template App (Ledger Nano S/X)",
+  "description": "Node API for Starkware App (Ledger Nano S/X)",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",
   "types": "./dist/index.d.ts",
-  "homepage": "https://github.com/zondax/ledger-rust-template",
+  "homepage": "https://github.com/zondax/ledger-starkware",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/zondax/ledger-rust-template.git"
+    "url": "git+https://github.com/zondax/ledger-starkware.git"
   },
   "keywords": [
     "Zondax",
     "Ledger",
+    "Starkware",
     "Javascript"
   ],
   "scripts": {
     "build": "tsc"
   },
   "bugs": {
-    "url": "https://github.com/zondax/ledger-rust-template/issues"
+    "url": "https://github.com/zondax/ledger-starkware/issues"
   },
   "dependencies": {
     "@ledgerhq/hw-transport": "^5.50.0"

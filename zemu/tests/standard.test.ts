@@ -16,7 +16,7 @@
 
 import Zemu from '@zondax/zemu'
 import { APP_DERIVATION, cartesianProduct, curves, defaultOptions, models } from './common'
-import TemplateApp, { Curve } from '@zondax/ledger-template-app'
+import StarkwareApp, { Curve } from '@zondax/ledger-starkware-app'
 
 const ed25519 = require('ed25519-supercop')
 
@@ -44,7 +44,7 @@ describe.each(models)('Standard', function (m) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
-      const app = new TemplateApp(sim.getTransport())
+      const app = new StarkwareApp(sim.getTransport())
       const resp = await app.getVersion()
 
       console.log(resp)
@@ -68,7 +68,7 @@ describe.each(models)('Standard [%s] - pubkey', function (m) {
       const sim = new Zemu(m.path)
       try {
         await sim.start({ ...defaultOptions, model: m.name })
-        const app = new TemplateApp(sim.getTransport())
+        const app = new StarkwareApp(sim.getTransport())
         const resp = await app.getAddressAndPubKey(APP_DERIVATION, curve)
 
         console.log(resp, m.name)
@@ -97,7 +97,7 @@ describe.each(models)('Standard [%s]; sign', function (m) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
-      const app = new TemplateApp(sim.getTransport())
+      const app = new StarkwareApp(sim.getTransport())
       const msg = data.op
       const respReq = app.sign(APP_DERIVATION, curve, msg)
 

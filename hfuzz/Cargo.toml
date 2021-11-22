@@ -10,7 +10,7 @@ honggfuzz = "0.5"
 
 #zemu-sys = { git = "https://github.com/Zondax/ledger-rust" }
 zemu-sys = { path = "../tmp-vendor/zemu" }
-ledger-app = { default-features = false, path = "../app", package = "template-app" }
+ledger-app = { default-features = false, path = "../app", package = "starkware-app" }
 
 [[bin]]
 name = "apdu"

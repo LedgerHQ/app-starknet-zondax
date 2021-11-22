@@ -51,17 +51,18 @@ $(info ************ LOGGING ENABLED ************)
 endif
 
 ifndef COIN
-COIN=XXX
+COIN=ETH
 endif
 
 include $(CURDIR)/Makefile.version
 
 $(info COIN  = [$(COIN)])
-ifeq ($(COIN),XXX)
+ifeq ($(COIN),ETH)
 # Main app configuration
 DEFINES += APP_STANDARD
-APPNAME = "Template"
-APPPATH = "44'/0'"
+APPNAME = "Starkware"
+APPPATH = "2645'/579218131'"
+DEFINES += STARK_BIP32_PATH_0=0x80000A55 STARK_BIP32_PATH_1=0xA2862AD3
 else
 define error_message
 COIN value not supported: [$(COIN)]
@@ -233,7 +234,7 @@ dep/%.d: %.c Makefile
 
 .PHONY: listvariants
 listvariants:
-	@echo VARIANTS COIN XTZ
+	@echo VARIANTS COIN ETH
 
 .PHONY: version
 version:

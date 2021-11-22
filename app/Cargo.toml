@@ -1,5 +1,5 @@
 [package]
-name = "template-app"
+name = "starkware-app"
 version = "0.1.0"
 edition = "2018"
 authors = ["Zondax <hello@zondax.ch>"]
@@ -23,7 +23,7 @@ no-std-compat = { version = "0.4" }
 cfg-if = "1.0.0"
 git-testament = { git = "https://github.com/Zondax/git-testament", branch = "fix/cve-2020-26235", version = "0.2.1", default-features = false }
 
-template-app-derive = { path = "../app-derive" }
+starkware-app-derive = { path = "../app-derive" }
 
 [target.thumbv6m-none-eabi.dev-dependencies]
 panic-halt = "0.2.0"
