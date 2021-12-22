@@ -16,22 +16,15 @@
 use core::{mem::MaybeUninit, ptr::addr_of_mut};
 use std::convert::{TryFrom, TryInto};
 
-use crate::{constants::EDWARDS_SIGN_BUFFER_MIN_LENGTH, sys, utils::ApduPanic};
+use crate::{constants::STARK_SIGN_BUFFER_MIN_LENGTH, sys, utils::ApduPanic};
 use sys::{crypto::bip32::BIP32Path, errors::Error, hash::Sha256};
 
 #[derive(Clone, Copy)]
-pub struct PublicKey(pub(crate) sys::crypto::ecfp256::PublicKey);
+pub struct PublicKey(pub(crate) sys::crypto::stark::PublicKey);
 
 impl PublicKey {
-    pub fn compress(&mut self) -> Result<(), Error> {
-        self.0.compress()
-    }
-
     pub fn curve(&self) -> Curve {
-        //this unwrap is ok because the curve
-        // can only be initialized by the library and not the user
-
-        self.0.curve().try_into().apdu_unwrap()
+        Curve::Stark256
     }
 }
 
@@ -44,7 +37,7 @@ impl AsRef<[u8]> for PublicKey {
 #[derive(Clone, Copy, PartialEq, Eq)]
 #[cfg_attr(test, derive(Debug))]
 pub enum Curve {
-    Ed25519,
+    Stark256,
 }
 
 impl TryFrom<u8> for Curve {
@@ -52,7 +45,7 @@ impl TryFrom<u8> for Curve {
 
     fn try_from(value: u8) -> Result<Self, Self::Error> {
         match value {
-            0 => Ok(Self::Ed25519),
+            0 => Ok(Self::Stark256),
             _ => Err(()),
         }
     }
@@ -61,7 +54,7 @@ impl TryFrom<u8> for Curve {
 impl From<Curve> for u8 {
     fn from(from: Curve) -> Self {
         match from {
-            Curve::Ed25519 => 0,
+            Curve::Stark256 => 0,
         }
     }
 }
@@ -69,7 +62,7 @@ impl From<Curve> for u8 {
 impl From<Curve> for sys::crypto::Curve {
     fn from(from: Curve) -> Self {
         match from {
-            Curve::Ed25519 => Self::Ed25519,
+            Curve::Stark256 => Self::Stark256,
         }
     }
 }
@@ -81,7 +74,7 @@ impl TryFrom<sys::crypto::Curve> for Curve {
         use sys::crypto::Curve as CCurve;
 
         match ccrv {
-            CCurve::Ed25519 => Ok(Self::Ed25519),
+            CCurve::Stark256 => Ok(Self::Stark256),
             #[allow(unreachable_patterns)]
             //this isn't actually unreachable because CCurve mock is just incomplete
             _ => Err(()),
@@ -89,7 +82,7 @@ impl TryFrom<sys::crypto::Curve> for Curve {
     }
 }
 
-pub struct SecretKey<const B: usize>(sys::crypto::ecfp256::SecretKey<B>);
+pub struct SecretKey<const B: usize>(sys::crypto::stark::SecretKey<B>);
 
 pub enum SignError {
     BufferTooSmall,
@@ -97,14 +90,8 @@ pub enum SignError {
 }
 
 impl<const B: usize> SecretKey<B> {
-    pub fn new(curve: Curve, path: BIP32Path<B>) -> Self {
-        use sys::crypto::Mode;
-
-        Self(sys::crypto::ecfp256::SecretKey::new(
-            Mode::BIP32,
-            curve.into(),
-            path,
-        ))
+    pub fn new(path: BIP32Path<B>) -> Self {
+        Self(sys::crypto::stark::SecretKey::new(path))
     }
 
     pub fn into_public(self) -> Result<PublicKey, Error> {
@@ -121,28 +108,22 @@ impl<const B: usize> SecretKey<B> {
     }
 
     pub fn curve(&self) -> Curve {
-        //this unwrap is ok because the curve
-        // can only be initialized by the library and not the user
-
-        self.0.curve().try_into().apdu_unwrap()
+        Curve::Stark256
     }
 
     pub fn sign(&self, data: &[u8], out: &mut [u8]) -> Result<usize, SignError> {
-        match self.curve() {
-            Curve::Ed25519 if out.len() < EDWARDS_SIGN_BUFFER_MIN_LENGTH => {
-                Err(SignError::BufferTooSmall)
-            }
-
-            Curve::Ed25519 => self
-                .0
-                .sign::<Sha256>(data, out) //pass Sha256 for the signature nonce hasher
-                .map_err(SignError::Sys),
+        if out.len() < STARK_SIGN_BUFFER_MIN_LENGTH {
+            return Err(SignError::BufferTooSmall);
         }
+
+        self.0
+            .sign(data, out) //pass Sha256 for the signature nonce hasher
+            .map_err(SignError::Sys)
     }
 }
 
 impl Curve {
     pub fn to_secret<const B: usize>(self, path: &BIP32Path<B>) -> SecretKey<B> {
-        SecretKey::new(self, *path)
+        SecretKey::new(*path)
     }
 }

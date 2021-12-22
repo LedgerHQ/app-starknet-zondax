@@ -95,7 +95,11 @@ pub const APDU_INDEX_LEN: usize = 4;
 
 pub const APDU_MIN_LENGTH: u32 = 5;
 
-pub const EDWARDS_SIGN_BUFFER_MIN_LENGTH: usize = 64;
+pub const BIP32_MAX_LENGTH: usize = 10;
+
+pub const STARK_SIGN_BUFFER_MIN_LENGTH: usize = 72;
+pub const STARK_BIP32_PATH_0: u32 = 0x8000_0A55;
+pub const STARK_BIP32_PATH_1: u32 = 0xA286_2AD3;
 
 pub(crate) mod instructions {
     pub const CLA: u8 = 0xFF;

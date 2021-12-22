@@ -31,7 +31,7 @@ fn sign() {
     buffer[0] = CLA;
     buffer[1] = INS;
     buffer[2] = PacketType::Init.into();
-    let len = prepare_buffer::<4>(&mut buffer, &[44, 0, 0, 0], Curve::Ed25519);
+    let len = prepare_buffer::<4>(&mut buffer, &[44, 0, 0, 0], Curve::Stark256);
 
     handle_apdu(&mut flags, &mut tx, 5 + len as u32, &mut buffer);
     assert_error_code!(tx, buffer, ApduError::Success);

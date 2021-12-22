@@ -19,7 +19,7 @@ use std::convert::TryFrom;
 use zemu_sys::{Show, ViewError, Viewable};
 
 use crate::{
-    constants::ApduError as Error,
+    constants::{ApduError as Error, BIP32_MAX_LENGTH, STARK_BIP32_PATH_0, STARK_BIP32_PATH_1},
     crypto,
     dispatcher::ApduHandler,
     handlers::handle_ui_message,
@@ -44,10 +44,7 @@ impl GetPublicKey {
         sys::zemu_log_stack("GetAddres::new_key\x00");
         curve.to_secret(path).into_public_into(out)?;
 
-        //this is safe because it's initialized
-        // also unwrapping is fine because the ptr is valid
-        let pkey = unsafe { out.as_mut_ptr().as_mut().apdu_unwrap() };
-        pkey.compress()
+        Ok(())
     }
 }
 
@@ -63,11 +60,19 @@ impl ApduHandler for GetPublicKey {
         *tx = 0;
 
         let req_confirmation = buffer.p1() >= 1;
-        let curve = crypto::Curve::try_from(buffer.p2()).map_err(|_| Error::InvalidP1P2)?;
+        let curve = crypto::Curve::Stark256;
 
         let cdata = buffer.payload().map_err(|_| Error::DataInvalid)?;
-        let bip32_path =
-            sys::crypto::bip32::BIP32Path::<6>::read(cdata).map_err(|_| Error::DataInvalid)?;
+        let bip32_path = sys::crypto::bip32::BIP32Path::<{ BIP32_MAX_LENGTH }>::read(cdata)
+            .map_err(|_| Error::DataInvalid)?;
+
+        //verify path starts with the stark-specific derivation path
+        if !bip32_path
+            .components()
+            .starts_with(&[STARK_BIP32_PATH_0, STARK_BIP32_PATH_1])
+        {
+            return Err(Error::DataInvalid);
+        }
 
         let mut ui = MaybeUninit::<AddrUI>::uninit();
 

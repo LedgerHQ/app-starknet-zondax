@@ -26,7 +26,7 @@ fn public_key() {
     let mut buffer = [0u8; 260];
 
     buffer[..3].copy_from_slice(&[CLA, INS, 0]);
-    prepare_buffer::<4>(&mut buffer, &[44, 0, 0, 0], Curve::Ed25519);
+    prepare_buffer::<4>(&mut buffer, &[44, 0, 0, 0], Curve::Stark256);
 
     handle_apdu(&mut flags, &mut tx, rx, &mut buffer);
 

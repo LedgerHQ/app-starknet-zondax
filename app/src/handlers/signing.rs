@@ -23,7 +23,7 @@ use bolos::{
 use zemu_sys::{Show, ViewError, Viewable};
 
 use crate::{
-    constants::ApduError as Error,
+    constants::{ApduError as Error, BIP32_MAX_LENGTH, STARK_BIP32_PATH_0, STARK_BIP32_PATH_1},
     crypto::Curve,
     dispatcher::ApduHandler,
     handlers::handle_ui_message,
@@ -31,29 +31,18 @@ use crate::{
     utils::{hex_encode, ApduBufferRead, ApduPanic, Uploader},
 };
 
-#[bolos::lazy_static]
-static mut PATH: Option<(BIP32Path<10>, Curve)> = None;
-
 pub struct Sign;
 
 impl Sign {
     pub const SIGN_HASH_SIZE: usize = 32;
 
-    fn get_derivation_info() -> Result<&'static (BIP32Path<10>, Curve), Error> {
-        match unsafe { &*PATH } {
-            None => Err(Error::ApduCodeConditionsNotSatisfied),
-            Some(some) => Ok(some),
-        }
-    }
-
     //(actual_size, [u8; MAX_SIGNATURE_SIZE])
     #[inline(never)]
     pub fn sign<const LEN: usize>(
-        curve: Curve,
         path: &BIP32Path<LEN>,
         data: &[u8],
     ) -> Result<(usize, [u8; 100]), Error> {
-        let sk = curve.to_secret(path);
+        let sk = Curve::Stark256.to_secret(path);
 
         let mut out = [0; 100];
         let sz = sk
@@ -77,15 +66,21 @@ impl Sign {
         flags: &mut u32,
     ) -> Result<u32, Error> {
         let curve = Curve::try_from(p2).map_err(|_| Error::InvalidP1P2)?;
-        let path = BIP32Path::read(init_data).map_err(|_| Error::DataInvalid)?;
+        let path =
+            BIP32Path::<BIP32_MAX_LENGTH>::read(init_data).map_err(|_| Error::DataInvalid)?;
 
-        unsafe {
-            PATH.replace((path, curve));
+        //verify path starts with the stark-specific derivation path
+        if !path
+            .components()
+            .starts_with(&[STARK_BIP32_PATH_0, STARK_BIP32_PATH_1])
+        {
+            return Err(Error::DataInvalid);
         }
 
         let unsigned_hash = Self::sha256_digest(data)?;
 
         let ui = SignUI {
+            path,
             hash: unsigned_hash,
             send_hash,
         };
@@ -115,12 +110,13 @@ impl ApduHandler for Sign {
     }
 }
 
-pub(crate) struct SignUI {
+pub(crate) struct SignUI<const B: usize> {
+    path: BIP32Path<B>,
     hash: [u8; Sign::SIGN_HASH_SIZE],
     send_hash: bool,
 }
 
-impl Viewable for SignUI {
+impl<const B: usize> Viewable for SignUI<B> {
     fn num_items(&mut self) -> Result<u8, ViewError> {
         Ok(1)
     }
@@ -149,22 +145,12 @@ impl Viewable for SignUI {
     }
 
     fn accept(&mut self, out: &mut [u8]) -> (usize, u16) {
-        let (path, curve) = match Sign::get_derivation_info() {
-            Err(e) => return (0, e as _),
-            Ok(k) => k,
-        };
-
-        let (sig_size, sig) = match Sign::sign(*curve, path, &self.hash[..]) {
+        let (sig_size, sig) = match Sign::sign(&self.path, &self.hash[..]) {
             Err(e) => return (0, e as _),
             Ok(k) => k,
         };
 
         let mut tx = 0;
-
-        //reset globals to avoid skipping `Init`
-        if let Err(e) = cleanup_globals() {
-            return (0, e as _);
-        }
 
         //write unsigned_hash to buffer
         if self.send_hash {
@@ -180,13 +166,6 @@ impl Viewable for SignUI {
     }
 
     fn reject(&mut self, _: &mut [u8]) -> (usize, u16) {
-        let _ = cleanup_globals();
         (0, Error::CommandNotAllowed as _)
     }
-}
-
-fn cleanup_globals() -> Result<(), Error> {
-    unsafe { PATH.take() };
-
-    Ok(())
 }
