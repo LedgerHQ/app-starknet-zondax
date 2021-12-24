@@ -21,14 +21,6 @@ export const P1_VALUES = {
   SHOW_ADDRESS_IN_DEVICE: 0x01,
 }
 
-export const P2_CURVE = {
-  ED25519: 0,
-}
-
-export enum Curve {
-  Ed25519 = P2_CURVE.ED25519,
-}
-
 export enum LedgerError {
   U2FUnknown = 1,
   U2FBadRequest = 2,

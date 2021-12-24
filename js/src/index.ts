@@ -20,7 +20,6 @@ import { ResponseAddress, ResponseAppInfo, ResponseBase, ResponseSign, ResponseV
 import {
   CHUNK_SIZE,
   CLA,
-  Curve,
   errorCodeToString,
   getVersion,
   INS,
@@ -30,7 +29,7 @@ import {
   processErrorResponse,
 } from './common'
 
-export { LedgerError, Curve }
+export { LedgerError }
 export * from './types'
 
 function processGetAddrResponse(response: Buffer) {
@@ -143,36 +142,31 @@ export default class StarkwareApp {
     }, processErrorResponse)
   }
 
-  async getPubKey(path: string, curve: Curve): Promise<ResponseAddress> {
+  async getPubKey(path: string): Promise<ResponseAddress> {
     const serializedPath = serializePath(path)
     return this.transport
-      .send(CLA, INS.GET_ADDR, P1_VALUES.ONLY_RETRIEVE, curve, serializedPath, [LedgerError.NoErrors])
+      .send(CLA, INS.GET_ADDR, P1_VALUES.ONLY_RETRIEVE, 0, serializedPath, [LedgerError.NoErrors])
       .then(processGetAddrResponse, processErrorResponse)
   }
 
-  async showPubKey(path: string, curve: Curve): Promise<ResponseAddress> {
+  async showPubKey(path: string): Promise<ResponseAddress> {
     const serializedPath = serializePath(path)
     return this.transport
-      .send(CLA, INS.GET_ADDR, P1_VALUES.SHOW_ADDRESS_IN_DEVICE, curve, serializedPath, [LedgerError.NoErrors])
+      .send(CLA, INS.GET_ADDR, P1_VALUES.SHOW_ADDRESS_IN_DEVICE, 0, serializedPath, [LedgerError.NoErrors])
       .then(processGetAddrResponse, processErrorResponse)
   }
 
-  async signSendChunk(chunkIdx: number, chunkNum: number, chunk: Buffer, curve?: Curve, ins: number = INS.SIGN): Promise<ResponseSign> {
+  async signSendChunk(chunkIdx: number, chunkNum: number, chunk: Buffer, ins: number = INS.SIGN): Promise<ResponseSign> {
     let payloadType = PAYLOAD_TYPE.ADD
-    let p2 = 0
     if (chunkIdx === 1) {
       payloadType = PAYLOAD_TYPE.INIT
-      if (curve === undefined) {
-        throw Error('curve type not given')
-      }
-      p2 = curve
     }
     if (chunkIdx === chunkNum) {
       payloadType = PAYLOAD_TYPE.LAST
     }
 
     return this.transport
-      .send(CLA, ins, payloadType, p2, chunk, [
+      .send(CLA, ins, payloadType, 0, chunk, [
         LedgerError.NoErrors,
         LedgerError.DataIsInvalid,
         LedgerError.BadKeyHandle,
@@ -208,9 +202,9 @@ export default class StarkwareApp {
       }, processErrorResponse)
   }
 
-  async sign(path: string, curve: Curve, message: Buffer) {
+  async sign(path: string, message: Buffer) {
     return this.signGetChunks(path, message).then(chunks => {
-      return this.signSendChunk(1, chunks.length, chunks[0], curve, INS.SIGN).then(async response => {
+      return this.signSendChunk(1, chunks.length, chunks[0], INS.SIGN).then(async response => {
         let result = {
           returnCode: response.returnCode,
           errorMessage: response.errorMessage,
@@ -219,7 +213,7 @@ export default class StarkwareApp {
         }
         for (let i = 1; i < chunks.length; i += 1) {
           // eslint-disable-next-line no-await-in-loop
-          result = await this.signSendChunk(1 + i, chunks.length, chunks[i], curve, INS.SIGN)
+          result = await this.signSendChunk(1 + i, chunks.length, chunks[i], INS.SIGN)
           if (result.returnCode !== LedgerError.NoErrors) {
             break
           }

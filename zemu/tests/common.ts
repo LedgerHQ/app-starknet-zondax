@@ -1,5 +1,4 @@
 import { DEFAULT_START_OPTIONS, DeviceModel } from '@zondax/zemu'
-import { Curve } from '@zondax/ledger-starkware-app'
 
 const Resolve = require('path').resolve
 
@@ -13,12 +12,11 @@ export const models: DeviceModel[] = [
   { name: 'nanox', prefix: 'X', path: APP_PATH_X },
 ]
 
-export const curves: Curve[] = [Curve.Ed25519]
-
 export const defaultOptions = {
   ...DEFAULT_START_OPTIONS,
   logging: true,
   custom: `-s "${APP_SEED}"`,
+  startText: 'DO NOT USE',
 }
 
 export const APP_DERIVATION = "m/2645'/579218131'/0'/0'"

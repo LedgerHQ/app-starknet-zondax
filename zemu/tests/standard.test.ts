@@ -15,8 +15,8 @@
  ******************************************************************************* */
 
 import Zemu from '@zondax/zemu'
-import { APP_DERIVATION, cartesianProduct, curves, defaultOptions, models } from './common'
-import StarkwareApp, { Curve } from '@zondax/ledger-starkware-app'
+import { APP_DERIVATION, cartesianProduct, defaultOptions, models } from './common'
+import StarkwareApp from '@zondax/ledger-starkware-app'
 
 import { ec as stark_ec } from 'starknet'
 
@@ -62,14 +62,14 @@ describe.each(models)('Standard', function (m) {
 })
 
 describe.each(models)('Standard [%s] - pubkey', function (m) {
-  test.each(curves)(
-    'get pubkey and addr %s',
-    async function (curve) {
+  test(
+    'get pubkey and addr',
+    async function () {
       const sim = new Zemu(m.path)
       try {
         await sim.start({ ...defaultOptions, model: m.name })
         const app = new StarkwareApp(sim.getTransport())
-        const resp = await app.getPubKey(APP_DERIVATION, curve)
+        const resp = await app.getPubKey(APP_DERIVATION)
 
         console.log(resp, m.name)
 
@@ -83,31 +83,31 @@ describe.each(models)('Standard [%s] - pubkey', function (m) {
   )
 })
 
-const SIGN_TEST_DATA = cartesianProduct(curves, [
+const SIGN_TEST_DATA = [
   {
     name: 'blind sign',
     nav: { s: [2, 0], x: [3, 0] },
     op: Buffer.from('hello@zondax.ch'),
   },
-])
+]
 
 describe.each(models)('Standard [%s]; sign', function (m) {
-  test.each(SIGN_TEST_DATA)('sign operation', async function (curve, data) {
+  test.each(SIGN_TEST_DATA)('sign operation', async function (data) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
       const app = new StarkwareApp(sim.getTransport())
       const msg = data.op
-      const respReq = app.sign(APP_DERIVATION, curve, msg)
+      const respReq = app.sign(APP_DERIVATION, msg)
 
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000)
 
       const navigation = m.name == 'nanox' ? data.nav.x : data.nav.s
-      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-sign-${data.name}-${curve}`, navigation)
+      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-sign-${data.name}`, navigation)
 
       const resp = await respReq
 
-      console.log(resp, m.name, data.name, curve)
+      console.log(resp, m.name, data.name)
 
       expect(resp.returnCode).toEqual(0x9000)
       expect(resp.errorMessage).toEqual('No errors')
@@ -115,7 +115,7 @@ describe.each(models)('Standard [%s]; sign', function (m) {
       expect(resp).toHaveProperty('r')
       expect(resp).toHaveProperty('s')
 
-      const resp_addr = await app.getPubKey(APP_DERIVATION, curve)
+      const resp_addr = await app.getPubKey(APP_DERIVATION)
 
       let signatureOK = true
       const keypair = stark_ec.getKeyPairFromPublicKey(resp_addr.publicKey.toString('hex'));
