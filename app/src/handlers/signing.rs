@@ -59,13 +59,10 @@ impl Sign {
 
     #[inline(never)]
     pub fn start_sign(
-        send_hash: bool,
-        p2: u8,
         init_data: &[u8],
         data: &'static [u8],
         flags: &mut u32,
     ) -> Result<u32, Error> {
-        let curve = Curve::try_from(p2).map_err(|_| Error::InvalidP1P2)?;
         let path =
             BIP32Path::<BIP32_MAX_LENGTH>::read(init_data).map_err(|_| Error::DataInvalid)?;
 
@@ -82,7 +79,6 @@ impl Sign {
         let ui = SignUI {
             path,
             hash: unsigned_hash,
-            send_hash,
         };
 
         unsafe { ui.show(flags) }
@@ -103,7 +99,7 @@ impl ApduHandler for Sign {
         *tx = 0;
 
         if let Some(upload) = Uploader::new(Self).upload(&buffer)? {
-            *tx = Self::start_sign(true, upload.p2, upload.first, upload.data, flags)?;
+            *tx = Self::start_sign(upload.first, upload.data, flags)?;
         }
 
         Ok(())
@@ -113,7 +109,6 @@ impl ApduHandler for Sign {
 pub(crate) struct SignUI<const B: usize> {
     path: BIP32Path<B>,
     hash: [u8; Sign::SIGN_HASH_SIZE],
-    send_hash: bool,
 }
 
 impl<const B: usize> Viewable for SignUI<B> {
@@ -153,14 +148,37 @@ impl<const B: usize> Viewable for SignUI<B> {
         let mut tx = 0;
 
         //write unsigned_hash to buffer
-        if self.send_hash {
-            out[tx..tx + Sign::SIGN_HASH_SIZE].copy_from_slice(&self.hash[..]);
-            tx += Sign::SIGN_HASH_SIZE;
-        }
+        out[tx..tx + Sign::SIGN_HASH_SIZE].copy_from_slice(&self.hash[..]);
+        tx += Sign::SIGN_HASH_SIZE;
 
-        //wrte signature to buffer
-        out[tx..tx + sig_size].copy_from_slice(&sig[..sig_size]);
-        tx += sig_size;
+        //write signature to buffer
+        //format signature out
+        {
+            out[tx] = 0;
+            tx += 1;
+
+            //point to r value
+            let mut xoffset = 4;
+            let mut xlength = sig[xoffset - 1] as usize;
+            if xlength == 33 {
+                xlength = 32;
+                xoffset += 1;
+            }
+            //copy r
+            out[tx + 32 - xlength..tx + 32].copy_from_slice(&sig[xoffset..xoffset + xlength]);
+            tx += 32;
+
+            xoffset += xlength + 2; //move ofer rvalue and TagLen
+
+            xlength = sig[xoffset - 1] as usize;
+            if xlength == 33 {
+                xlength = 32;
+                xoffset += 1;
+            }
+            //copy s
+            out[tx + 32 - xlength..tx + 32].copy_from_slice(&sig[xoffset..xoffset + xlength]);
+            tx += 32;
+        }
 
         (tx, Error::Success as _)
     }

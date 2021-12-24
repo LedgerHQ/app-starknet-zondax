@@ -93,9 +93,6 @@ impl ApduHandler for GetPublicKey {
         // even tho the hash isn't, we aren't gonna read from it
         let mut ui = unsafe { ui.assume_init() };
 
-        //actually compute pkey hash
-        Sha256::digest_into(ui.pkey.as_ref(), &mut ui.hash).map_err(|_| Error::ExecutionError)?;
-
         if req_confirmation {
             unsafe { ui.show(flags) }.map_err(|_| Error::ExecutionError)
         } else {
@@ -115,7 +112,6 @@ impl ApduHandler for GetPublicKey {
 
 pub struct AddrUI {
     pub pkey: crypto::PublicKey,
-    hash: [u8; 32],
 }
 
 impl Viewable for AddrUI {
@@ -136,8 +132,8 @@ impl Viewable for AddrUI {
             let title_content = pic_str!(b"Public Key");
             title[..title_content.len()].copy_from_slice(title_content);
 
-            let mut mex = [0; 64];
-            let len = hex_encode(&self.hash[..], &mut mex).apdu_unwrap();
+            let mut mex = [0; {crypto::PublicKey::MAX_LEN * 2}];
+            let len = hex_encode(self.pkey.as_ref(), &mut mex).apdu_unwrap();
 
             handle_ui_message(&mex[..len], message, page)
         } else {
@@ -153,9 +149,6 @@ impl Viewable for AddrUI {
         tx += 1;
         out[tx..tx + pkey.len()].copy_from_slice(pkey);
         tx += pkey.len();
-
-        out[tx..tx + self.hash.len()].copy_from_slice(&self.hash[..]);
-        tx += self.hash.len();
 
         (tx, Error::Success as _)
     }

@@ -14,15 +14,17 @@
 *  limitations under the License.
 ********************************************************************************/
 use core::{mem::MaybeUninit, ptr::addr_of_mut};
-use std::convert::{TryFrom, TryInto};
+use std::convert::TryFrom;
 
-use crate::{constants::STARK_SIGN_BUFFER_MIN_LENGTH, sys, utils::ApduPanic};
-use sys::{crypto::bip32::BIP32Path, errors::Error, hash::Sha256};
+use crate::{constants::STARK_SIGN_BUFFER_MIN_LENGTH, sys};
+use sys::{crypto::bip32::BIP32Path, errors::Error};
 
 #[derive(Clone, Copy)]
 pub struct PublicKey(pub(crate) sys::crypto::stark::PublicKey);
 
 impl PublicKey {
+    pub const MAX_LEN: usize = 65;
+
     pub fn curve(&self) -> Curve {
         Curve::Stark256
     }
