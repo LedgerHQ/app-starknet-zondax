@@ -5,7 +5,6 @@ export interface ResponseBase {
 
 export interface ResponseAddress extends ResponseBase {
   publicKey: Buffer
-  hash: Buffer
 }
 
 export interface ResponseVersion extends ResponseBase {
@@ -30,5 +29,6 @@ export interface ResponseAppInfo extends ResponseBase {
 
 export interface ResponseSign extends ResponseBase {
   hash: Buffer
-  signature: Buffer
+  r: Buffer,
+  s: Buffer,
 }

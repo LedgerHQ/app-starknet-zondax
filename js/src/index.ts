@@ -46,11 +46,8 @@ function processGetAddrResponse(response: Buffer) {
   //"advance" buffer
   partialResponse = partialResponse.slice(1 + PKLEN)
 
-  const hash = Buffer.from(partialResponse.slice(0, -2))
-
   return {
     publicKey,
-    hash,
     returnCode,
     errorMessage: errorCodeToString(returnCode),
   }
@@ -146,14 +143,14 @@ export default class StarkwareApp {
     }, processErrorResponse)
   }
 
-  async getAddressAndPubKey(path: string, curve: Curve): Promise<ResponseAddress> {
+  async getPubKey(path: string, curve: Curve): Promise<ResponseAddress> {
     const serializedPath = serializePath(path)
     return this.transport
       .send(CLA, INS.GET_ADDR, P1_VALUES.ONLY_RETRIEVE, curve, serializedPath, [LedgerError.NoErrors])
       .then(processGetAddrResponse, processErrorResponse)
   }
 
-  async showAddressAndPubKey(path: string, curve: Curve): Promise<ResponseAddress> {
+  async showPubKey(path: string, curve: Curve): Promise<ResponseAddress> {
     const serializedPath = serializePath(path)
     return this.transport
       .send(CLA, INS.GET_ADDR, P1_VALUES.SHOW_ADDRESS_IN_DEVICE, curve, serializedPath, [LedgerError.NoErrors])
@@ -197,7 +194,8 @@ export default class StarkwareApp {
         if (returnCode === LedgerError.NoErrors && response.length > 2) {
           return {
             hash: response.slice(0, 32),
-            signature: response.slice(32, -2),
+            r: response.slice(33, 64),
+            s: response.slice(64, 64+32),
             returnCode: returnCode,
             errorMessage: errorMessage,
           }
@@ -216,7 +214,8 @@ export default class StarkwareApp {
         let result = {
           returnCode: response.returnCode,
           errorMessage: response.errorMessage,
-          signature: null as null | Buffer,
+          r: null as null | Buffer,
+          s: null as null | Buffer,
         }
         for (let i = 1; i < chunks.length; i += 1) {
           // eslint-disable-next-line no-await-in-loop

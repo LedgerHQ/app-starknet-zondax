@@ -18,7 +18,7 @@ import Zemu from '@zondax/zemu'
 import { APP_DERIVATION, cartesianProduct, curves, defaultOptions, models } from './common'
 import StarkwareApp, { Curve } from '@zondax/ledger-starkware-app'
 
-const ed25519 = require('ed25519-supercop')
+import { ec as stark_ec } from 'starknet'
 
 describe.each(models)('Standard', function (m) {
   test('can start and stop container', async function () {
@@ -69,14 +69,13 @@ describe.each(models)('Standard [%s] - pubkey', function (m) {
       try {
         await sim.start({ ...defaultOptions, model: m.name })
         const app = new StarkwareApp(sim.getTransport())
-        const resp = await app.getAddressAndPubKey(APP_DERIVATION, curve)
+        const resp = await app.getPubKey(APP_DERIVATION, curve)
 
         console.log(resp, m.name)
 
         expect(resp.returnCode).toEqual(0x9000)
         expect(resp.errorMessage).toEqual('No errors')
         expect(resp).toHaveProperty('publicKey')
-        expect(resp).toHaveProperty('hash')
       } finally {
         await sim.close()
       }
@@ -113,19 +112,16 @@ describe.each(models)('Standard [%s]; sign', function (m) {
       expect(resp.returnCode).toEqual(0x9000)
       expect(resp.errorMessage).toEqual('No errors')
       expect(resp).toHaveProperty('hash')
-      expect(resp).toHaveProperty('signature')
+      expect(resp).toHaveProperty('r')
+      expect(resp).toHaveProperty('s')
 
-      const resp_addr = await app.getAddressAndPubKey(APP_DERIVATION, curve)
+      const resp_addr = await app.getPubKey(APP_DERIVATION, curve)
 
       let signatureOK = true
-      switch (curve) {
-        case Curve.Ed25519:
-          signatureOK = ed25519.verify(resp.signature, resp.hash, resp_addr.publicKey.slice(1, 33))
-          break
+      const keypair = stark_ec.getKeyPairFromPublicKey(resp_addr.publicKey.toString('hex'));
 
-        default:
-          throw Error('not a valid curve type')
-      }
+      signatureOK = stark_ec.verify(keypair, resp.hash, [resp.r.toString('hex'), resp.s.toString('hex')]);
+
       expect(signatureOK).toEqual(true)
     } finally {
       await sim.close()
