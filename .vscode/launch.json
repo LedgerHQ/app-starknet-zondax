@@ -1,0 +1,28 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Zemu Attach S",
+      "type": "gdb",
+      "request": "attach",
+      "executable": "${workspaceFolder}/rust/app/output/app_s.elf",
+      "target": ":1234",
+      "remote": true,
+      "cwd": "${workspaceFolder}",
+      "valuesFormatting": "parseText",
+      "gdbpath": "gdb-multiarch",
+      "stopOnEntry": true,
+      "autorun": [
+        "set substitute-path /project ${workspaceFolder}",
+        "set substitute-path /cargo ${env:HOME}/.cargo",
+        "set substitute-path /rustc/2fd73fabe469357a12c2c974c140f67e7cdd76d0 ${env:HOME}/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/lib/rustlib/src/rust",
+        "set architecture arm",
+        "set backtrace limit 5",
+        "handle SIGILL nostop pass noprint",
+        "add-symbol-file ${workspaceFolder}/rust/app/output/app_s.elf 0x40000000",
+        "b rs_handle_apdu",
+        "b rslib::__panic_handler::panic"
+      ]
+    }
+  ]
+}

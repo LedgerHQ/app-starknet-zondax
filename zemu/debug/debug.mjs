@@ -13,6 +13,7 @@ const SIM_OPTIONS = {
   X11: true,
   custom: `-s "${seed}" --color LAGOON_BLUE`,
   model: 'nanos',
+  startText: 'DO NOT USE',
 }
 
 async function beforeStart() {
@@ -33,7 +34,7 @@ async function debugScenario1(sim, app) {
 }
 
 async function callTestFunction(sim, app) {
-  let response = await app.sign(APP_DERIVATION, 0, Buffer.from('hello@zondax.ch'))
+  let response = await app.getPubKey(APP_DERIVATION)
 
   console.log(response)
 }
