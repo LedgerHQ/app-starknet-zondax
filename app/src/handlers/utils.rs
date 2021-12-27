@@ -13,8 +13,12 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
+use crate::{
+    constants::{ApduError, STARK_BIP32_PATH_0, STARK_BIP32_PATH_1},
+    sys::{crypto::bip32::BIP32Path, ViewError, PIC},
+};
+
 use core::convert::TryFrom;
-use zemu_sys::ViewError;
 
 #[repr(u8)]
 pub enum ZPacketType {
@@ -80,5 +84,19 @@ pub fn handle_ui_message(item: &[u8], out: &mut [u8], page: u8) -> Result<u8, Vi
         out[..item.len()].copy_from_slice(item);
         out[item.len()] = 0; //null terminate
         Ok(1)
+    }
+}
+
+#[inline(never)]
+///Verify path starts with the stark-specific derivation path
+pub fn verify_bip32_path<const B: usize>(path: &BIP32Path<B>) -> Result<(), ApduError> {
+    let path_0 = *PIC::new(STARK_BIP32_PATH_0).get_ref();
+    let path_1 = *PIC::new(STARK_BIP32_PATH_1).get_ref();
+
+    //verify path starts with the stark-specific derivation path
+    if !path.components().starts_with(&[path_0, path_1]) {
+        Err(ApduError::DataInvalid)
+    } else {
+        Ok(())
     }
 }

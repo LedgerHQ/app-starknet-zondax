@@ -23,10 +23,10 @@ use bolos::{
 use zemu_sys::{Show, ViewError, Viewable};
 
 use crate::{
-    constants::{ApduError as Error, BIP32_MAX_LENGTH, STARK_BIP32_PATH_0, STARK_BIP32_PATH_1},
+    constants::{ApduError as Error, BIP32_MAX_LENGTH},
     crypto::Curve,
     dispatcher::ApduHandler,
-    handlers::handle_ui_message,
+    handlers::{verify_bip32_path, handle_ui_message},
     sys,
     utils::{hex_encode, ApduBufferRead, ApduPanic, Uploader},
 };
@@ -66,13 +66,7 @@ impl Sign {
         let path =
             BIP32Path::<BIP32_MAX_LENGTH>::read(init_data).map_err(|_| Error::DataInvalid)?;
 
-        //verify path starts with the stark-specific derivation path
-        if !path
-            .components()
-            .starts_with(&[STARK_BIP32_PATH_0, STARK_BIP32_PATH_1])
-        {
-            return Err(Error::DataInvalid);
-        }
+        verify_bip32_path(&path)?;
 
         let unsigned_hash = Self::sha256_digest(data)?;
 

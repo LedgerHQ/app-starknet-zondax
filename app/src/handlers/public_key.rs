@@ -19,10 +19,10 @@ use std::convert::TryFrom;
 use zemu_sys::{Show, ViewError, Viewable};
 
 use crate::{
-    constants::{ApduError as Error, BIP32_MAX_LENGTH, STARK_BIP32_PATH_0, STARK_BIP32_PATH_1},
+    constants::{ApduError as Error, BIP32_MAX_LENGTH},
     crypto,
     dispatcher::ApduHandler,
-    handlers::handle_ui_message,
+    handlers::{verify_bip32_path, handle_ui_message},
     sys::{
         self,
         hash::{Hasher, Sha256},
@@ -66,13 +66,7 @@ impl ApduHandler for GetPublicKey {
         let bip32_path = sys::crypto::bip32::BIP32Path::<{ BIP32_MAX_LENGTH }>::read(cdata)
             .map_err(|_| Error::DataInvalid)?;
 
-        //verify path starts with the stark-specific derivation path
-        if !bip32_path
-            .components()
-            .starts_with(&[STARK_BIP32_PATH_0, STARK_BIP32_PATH_1])
-        {
-            return Err(Error::DataInvalid);
-        }
+        verify_bip32_path(&bip32_path)?;
 
         let mut ui = MaybeUninit::<AddrUI>::uninit();
 
