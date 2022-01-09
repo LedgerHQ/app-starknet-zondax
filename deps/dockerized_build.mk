@@ -109,8 +109,8 @@ generate_rustX:
 
 .PHONY: convert_icon
 convert_icon:
-	@convert $(LEDGER_SRC)/tmp.gif -monochrome -size 16x16 -depth 1 $(LEDGER_SRC)/nanos_icon.gif
-	@convert $(LEDGER_SRC)/nanos_icon.gif -crop 14x14+1+1 +repage -negate $(LEDGER_SRC)/nanox_icon.gif
+	@convert $(CURDIR)/tmp.gif -monochrome -size 16x16 -depth 1 $(CURDIR)/nanos_icon.gif
+	@convert $(CURDIR)/nanos_icon.gif -crop 14x14+1+1 +repage -negate $(CURDIR)/nanox_icon.gif
 
 .PHONY: buildS
 buildS: build_rustS
@@ -150,19 +150,19 @@ shellX:
 
 .PHONY: load
 load:
-	${LEDGER_SRC}/pkg/installer_s.sh load
+	${OUTPUT_DIR}/pkg/installer_s.sh load
 
 .PHONY: delete
 delete:
-	${LEDGER_SRC}/pkg/installer_s.sh delete
+	${OUTPUT_DIR}/pkg/installer_s.sh delete
 
 .PHONY: loadX
 loadX:
-	${LEDGER_SRC}/pkg/installer_x.sh load
+	${OUTPUT_DIR}/pkg/installer_x.sh load
 
 .PHONY: deleteX
 deleteX:
-	${LEDGER_SRC}/pkg/installer_x.sh delete
+	${OUTPUT_DIR}/pkg/installer_x.sh delete
 
 .PHONY: show_info_recovery_mode
 show_info_recovery_mode:
