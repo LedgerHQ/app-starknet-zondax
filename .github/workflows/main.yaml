@@ -76,7 +76,7 @@ jobs:
           BOLOS_SDK: ${{ github.workspace }}/deps/nanos-secure-sdk
         run: |
           source $HOME/.cargo/env
-          make build
+          make
       - name: Build Nano X apps
         shell: bash -l {0}
         env:
@@ -84,7 +84,7 @@ jobs:
         run: |
           source $HOME/.cargo/env
           make clean
-          make build
+          make
 
       - name: Upload elfs
         uses: actions/upload-artifact@v2

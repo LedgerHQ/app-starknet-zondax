@@ -22,7 +22,7 @@ use crate::{
     constants::{ApduError as Error, BIP32_MAX_LENGTH},
     crypto,
     dispatcher::ApduHandler,
-    handlers::{verify_bip32_path, handle_ui_message},
+    handlers::{handle_ui_message, verify_bip32_path},
     sys::{
         self,
         hash::{Hasher, Sha256},
@@ -126,7 +126,7 @@ impl Viewable for AddrUI {
             let title_content = pic_str!(b"Public Key");
             title[..title_content.len()].copy_from_slice(title_content);
 
-            let mut mex = [0; {crypto::PublicKey::MAX_LEN * 2}];
+            let mut mex = [0; { crypto::PublicKey::MAX_LEN * 2 }];
             let len = hex_encode(self.pkey.as_ref(), &mut mex).apdu_unwrap();
 
             handle_ui_message(&mex[..len], message, page)

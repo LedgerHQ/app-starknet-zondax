@@ -26,7 +26,7 @@ use crate::{
     constants::{ApduError as Error, BIP32_MAX_LENGTH},
     crypto::Curve,
     dispatcher::ApduHandler,
-    handlers::{verify_bip32_path, handle_ui_message},
+    handlers::{handle_ui_message, verify_bip32_path},
     sys,
     utils::{hex_encode, ApduBufferRead, ApduPanic, Uploader},
 };
