@@ -16,8 +16,8 @@ derive-debug = []
 default = ["derive-debug"]
 
 [dependencies]
-bolos = { git = "https://github.com/Zondax/ledger-rust" }
-zemu-sys = { git = "https://github.com/Zondax/ledger-rust" }
+bolos = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark" }
+zemu-sys = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark" }
 
 no-std-compat = { version = "0.4" }
 cfg-if = "1.0.0"
@@ -31,5 +31,5 @@ panic-halt = "0.2.0"
 [dev-dependencies]
 no-std-compat = { version = "0.4", features = ["std"] }
 serial_test = "0.5"
-zuit = { git = "https://github.com/Zondax/ledger-rust" }
-bolos = { git = "https://github.com/Zondax/ledger-rust", features = ["derive-debug"] }
+zuit = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark" }
+bolos = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark", features = ["derive-debug"] }
