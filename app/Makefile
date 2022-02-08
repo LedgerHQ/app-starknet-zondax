@@ -201,14 +201,14 @@ SDK_SOURCE_PATH += lib_ux
 rust:
 	CARGO_HOME="$(CURDIR)/.cargo" TARGET_NAME=$(TARGET_NAME) cargo build --target thumbv6m-none-eabi --release --no-default-features $(RUST_FEATURES)
 
-.PHONY: rust_clean
+.PHONY: clean clean_artifact rust_clean
 rust_clean:
 	CARGO_HOME="$(CURDIR)/.cargo" cargo clean
 
 clean_artifact: rust_clean
 	@rm -r $(ARTIFACT_OUTPUT_PATH) || true
 
-clean: clean_artifact
+clean: rust_clean 
 
 .PHONY: create_output_folders
 create_output_folders:
