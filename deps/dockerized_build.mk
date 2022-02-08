@@ -61,8 +61,6 @@ define run_docker
 	-e SCP_PRIVKEY=$(SCP_PRIVKEY) \
 	-e BOLOS_SDK=$(1) \
 	-e BOLOS_ENV=/opt/bolos \
-	-e BAKING=$(BAKING) \
-	-e APP=$(BAKING) \
 	-u $(USERID) \
 	-v $(shell pwd):/project \
 	-e COIN=$(COIN) \
@@ -123,9 +121,9 @@ buildX: build_rustX
 .PHONY: clean_output
 clean_output:
 	@echo "Removing output files"
-	@rm -f build/output/app* || true
+	@rm -rf build || true
 
-.PHONY: clean
+.PHONY: clean_build
 clean_build:
 	$(call run_docker,$(DOCKER_BOLOS_SDKS),make -C $(DOCKER_APP_SRC) clean)
 

@@ -61,7 +61,7 @@ describe.each(models)('Standard', function (m) {
   })
 })
 
-describe.each(models)('Standard [%s] - pubkey', function (m) {
+describe.skip.each(models)('Standard [%s] - pubkey', function (m) {
   test(
     'get pubkey and addr',
     async function () {
@@ -91,7 +91,7 @@ const SIGN_TEST_DATA = [
   },
 ]
 
-describe.each(models)('Standard [%s]; sign', function (m) {
+describe.skip.each(models)('Standard [%s]; sign', function (m) {
   test.each(SIGN_TEST_DATA)('sign operation', async function (data) {
     const sim = new Zemu(m.path)
     try {

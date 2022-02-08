@@ -1,7 +1,7 @@
 [workspace]
 members = [ "app", "app-derive" ]
 
-exclude = [ "hfuzz", "tmp-vendor" ]
+exclude = [ "hfuzz" ]
 
 resolver = "2"
 
