@@ -46,7 +46,7 @@ pub fn prepare_buffer<const LEN: usize>(
     curve: Curve,
 ) -> usize {
     let crv: u8 = curve.into();
-    let path = BIP32Path::<LEN>::new(path.iter().map(|n| 0x8000_0000 + n))
+    let path = BIP32Path::<LEN>::new(path.iter().map(|n| 0x8000_0000 | n))
         .unwrap()
         .serialize();
 

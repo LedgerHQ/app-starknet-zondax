@@ -16,9 +16,12 @@
 mod prelude;
 use prelude::*;
 
-use constants::INS_GET_PUBLIC_KEY as INS;
+use constants::{
+    INS_GET_PUBLIC_KEY as INS, STARK_BIP32_PATH_0 as PATH0, STARK_BIP32_PATH_1 as PATH1,
+};
 
 #[test]
+#[should_panic(message = "not yet implemented")]
 fn public_key() {
     let mut flags = 0u32;
     let mut tx = 0u32;
@@ -26,10 +29,10 @@ fn public_key() {
     let mut buffer = [0u8; 260];
 
     buffer[..3].copy_from_slice(&[CLA, INS, 0]);
-    prepare_buffer::<4>(&mut buffer, &[44, 0, 0, 0], Curve::Stark256);
+    prepare_buffer::<4>(&mut buffer, &[PATH0, PATH1, 0, 0], Curve::Stark256);
 
     handle_apdu(&mut flags, &mut tx, rx, &mut buffer);
 
     assert_error_code!(tx, buffer, ApduError::Success);
-    assert_eq!(tx as usize, 1 + 32 + 2 + 32); //32 bytes for ed25519 and 32 bytes for hash
+    assert_eq!(tx as usize, 1 + 32 + 2 + 32); //32 bytes for signature and 32 bytes for hash
 }
