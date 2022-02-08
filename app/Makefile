@@ -205,8 +205,10 @@ rust:
 rust_clean:
 	CARGO_HOME="$(CURDIR)/.cargo" cargo clean
 
-clean: rust_clean
-	rm -r $(ARTIFACT_OUTPUT_PATH)
+clean_artifact: rust_clean
+	@rm -r $(ARTIFACT_OUTPUT_PATH) || true
+
+clean: clean_artifact
 
 .PHONY: create_output_folders
 create_output_folders:
