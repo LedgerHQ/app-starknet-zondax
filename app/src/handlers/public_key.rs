@@ -25,7 +25,6 @@ use crate::{
     handlers::{handle_ui_message, verify_bip32_path},
     sys::{
         self,
-        hash::{Hasher, Sha256},
         Error as SysError,
     },
     utils::{hex_encode, ApduBufferRead, ApduPanic},

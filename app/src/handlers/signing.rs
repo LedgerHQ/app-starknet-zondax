@@ -136,7 +136,7 @@ impl<const B: usize> Viewable for SignUI<B> {
     }
 
     fn accept(&mut self, out: &mut [u8]) -> (usize, u16) {
-        let (parity, sig_size, sig) = match Sign::sign(&self.path, &self.hash[..]) {
+        let (parity, _, sig) = match Sign::sign(&self.path, &self.hash[..]) {
             Err(e) => return (0, e as _),
             Ok(k) => k,
         };

@@ -131,7 +131,7 @@ impl<const B: usize> Viewable for SignFeltUI<B> {
     }
 
     fn accept(&mut self, out: &mut [u8]) -> (usize, u16) {
-        let (parity, sig_size, sig) = match SignFelt::sign(&self.path, &self.felt[..]) {
+        let (parity, _, sig) = match SignFelt::sign(&self.path, &self.felt[..]) {
             Err(e) => return (0, e as _),
             Ok(k) => k,
         };

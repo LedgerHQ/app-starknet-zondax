@@ -133,6 +133,7 @@ pub fn convert_der_to_rs<const R: usize, const S: usize>(
     const PAYLOADLEN: usize = 32;
     const MAXPAYLOADLEN: usize = 33;
 
+    let payload_range = core::ops::RangeInclusive::new(MINPAYLOADLEN, MAXPAYLOADLEN);
     // https://github.com/libbitcoin/libbitcoin-system/wiki/ECDSA-and-DER-Signatures#serialised-der-signature-sequence
     // 0                [1 byte]   - DER Prefix
     // 1                [1 byte]   - Payload len
@@ -176,7 +177,7 @@ pub fn convert_der_to_rs<const R: usize, const S: usize>(
     }
 
     let r_len = sig[3] as usize;
-    if r_len < MINPAYLOADLEN || r_len > MAXPAYLOADLEN {
+    if !payload_range.contains(&r_len) {
         return Err(ConvertError::InvalidRLen(r_len));
     }
 
@@ -189,7 +190,7 @@ pub fn convert_der_to_rs<const R: usize, const S: usize>(
     }
 
     let s_len = sig[4 + r_len + 1] as usize;
-    if s_len < MINPAYLOADLEN || s_len > MAXPAYLOADLEN {
+    if !payload_range.contains(&r_len) {
         return Err(ConvertError::InvalidSLen(s_len));
     }
 
