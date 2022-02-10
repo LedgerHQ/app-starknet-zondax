@@ -31,4 +31,5 @@ export interface ResponseSign extends ResponseBase {
   hash: Buffer
   r: Buffer,
   s: Buffer,
+  v: number,
 }

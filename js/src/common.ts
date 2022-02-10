@@ -8,6 +8,7 @@ export const INS = {
   GET_VERSION: 0x00,
   GET_ADDR: 0x01,
   SIGN: 0x02,
+  SIGN_FELT: 0x20,
 }
 
 export const PAYLOAD_TYPE = {

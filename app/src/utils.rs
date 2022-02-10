@@ -14,6 +14,7 @@
 *  limitations under the License.
 ********************************************************************************/
 #![allow(dead_code)]
+#![allow(unused_macros)]
 
 use bolos::PIC;
 

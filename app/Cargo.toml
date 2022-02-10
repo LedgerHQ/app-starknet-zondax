@@ -24,6 +24,7 @@ cfg-if = "1.0.0"
 git-testament = { git = "https://github.com/Zondax/git-testament", branch = "fix/cve-2020-26235", version = "0.2.1", default-features = false }
 
 starkware-app-derive = { path = "../app-derive" }
+arrayref = "0.3.6"
 
 [target.thumbv6m-none-eabi.dev-dependencies]
 panic-halt = "0.2.0"
