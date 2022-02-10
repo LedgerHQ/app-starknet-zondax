@@ -156,7 +156,7 @@ export default class StarkwareApp {
       .then(processGetAddrResponse, processErrorResponse)
   }
 
-  async signSendChunk(chunkIdx: number, chunkNum: number, chunk: Buffer, ins: number = INS.SIGN): Promise<ResponseSign> {
+  async signSendChunk(chunkIdx: number, chunkNum: number, chunk: Buffer, ins: number = INS.SIGN, p2: number = 0): Promise<ResponseSign> {
     let payloadType = PAYLOAD_TYPE.ADD
     if (chunkIdx === 1) {
       payloadType = PAYLOAD_TYPE.INIT
@@ -166,7 +166,7 @@ export default class StarkwareApp {
     }
 
     return this.transport
-      .send(CLA, ins, payloadType, 0, chunk, [
+      .send(CLA, ins, payloadType, p2, chunk, [
         LedgerError.NoErrors,
         LedgerError.DataIsInvalid,
         LedgerError.BadKeyHandle,
@@ -187,9 +187,10 @@ export default class StarkwareApp {
 
         if (returnCode === LedgerError.NoErrors && response.length > 2) {
           return {
-            hash: response.slice(0, 32),
-            r: response.slice(33, 64),
-            s: response.slice(64, 64+32),
+            r: response.slice(0, 32),
+            s: response.slice(32, 32 + 32),
+            v: response[64],
+            hash: response.slice(65, 65 + 32),
             returnCode: returnCode,
             errorMessage: errorMessage,
           }
@@ -208,12 +209,44 @@ export default class StarkwareApp {
         let result = {
           returnCode: response.returnCode,
           errorMessage: response.errorMessage,
+          hash: null as null | Buffer,
           r: null as null | Buffer,
           s: null as null | Buffer,
+          v: null as null | number,
         }
+
         for (let i = 1; i < chunks.length; i += 1) {
           // eslint-disable-next-line no-await-in-loop
           result = await this.signSendChunk(1 + i, chunks.length, chunks[i], INS.SIGN)
+          if (result.returnCode !== LedgerError.NoErrors) {
+            break
+          }
+        }
+        return result
+      }, processErrorResponse)
+    }, processErrorResponse)
+  }
+
+  async signFelt(path: string, felt: Buffer, show: boolean = true) {
+    if (felt.length != 32) {
+      throw 'invalid felt length';
+    }
+
+    return this.signGetChunks(path, felt).then(chunks => {
+      return this.signSendChunk(1, chunks.length, chunks[0], INS.SIGN_FELT, show ? 1 : 0).then(async response => {
+        let result = {
+          returnCode: response.returnCode,
+          errorMessage: response.errorMessage,
+          hash: undefined as undefined | Buffer,
+          r: null as null | Buffer,
+          s: null as null | Buffer,
+          v: null as null | number,
+        }
+        for (let i = 1; i < chunks.length; i += 1) {
+          // eslint-disable-next-line no-await-in-loop
+          result = await this.signSendChunk(1 + i, chunks.length, chunks[i], INS.SIGN_FELT, show ? 1 : 0)
+          result.hash = undefined;
+
           if (result.returnCode !== LedgerError.NoErrors) {
             break
           }

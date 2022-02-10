@@ -107,6 +107,7 @@ pub(crate) mod instructions {
     pub const INS_GET_VERSION: u8 = 0x00;
     pub const INS_GET_PUBLIC_KEY: u8 = 0x01;
     pub const INS_SIGN: u8 = 0x02;
+    pub const INS_SIGN_FELT: u8 = 0x20;
 }
 
 pub use instructions::*;

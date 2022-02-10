@@ -34,6 +34,7 @@ pub mod resources {
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub enum BUFFERAccessors {
         Sign,
+        SignFelt,
         #[cfg(feature = "dev")]
         Debug,
     }
@@ -41,6 +42,12 @@ pub mod resources {
     impl From<super::signing::Sign> for BUFFERAccessors {
         fn from(_: super::signing::Sign) -> Self {
             Self::Sign
+        }
+    }
+
+    impl From<super::signing::SignFelt> for BUFFERAccessors {
+        fn from(_: super::signing::SignFelt) -> Self {
+            Self::SignFelt
         }
     }
 
