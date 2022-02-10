@@ -13,13 +13,11 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
-use arrayref::array_mut_ref;
-use bolos::{
-    crypto::bip32::BIP32Path,
-    hash::{Hasher, Sha256},
-    pic_str, PIC,
-};
+use bolos::{crypto::bip32::BIP32Path, pic_str, PIC};
+use core::convert::TryFrom;
 use zemu_sys::{Show, ViewError, Viewable};
+
+use arrayref::array_mut_ref;
 
 use crate::{
     constants::{ApduError as Error, BIP32_MAX_LENGTH},
@@ -30,13 +28,10 @@ use crate::{
     utils::{hex_encode, ApduBufferRead, ApduPanic, Uploader},
 };
 
-mod felt;
-pub use felt::SignFelt;
+pub struct SignFelt;
 
-pub struct Sign;
-
-impl Sign {
-    pub const SIGN_HASH_SIZE: usize = 32;
+impl SignFelt {
+    pub const SIGN_ITEM_SIZE: usize = 32;
 
     //(actual_size, [u8; MAX_SIGNATURE_SIZE])
     #[inline(never)]
@@ -53,37 +48,9 @@ impl Sign {
 
         Ok((parity, sz, out))
     }
-
-    #[inline(never)]
-    fn sha256_digest(buffer: &[u8]) -> Result<[u8; Self::SIGN_HASH_SIZE], Error> {
-        Sha256::digest(buffer).map_err(|_| Error::ExecutionError)
-    }
-
-    #[inline(never)]
-    pub fn start_sign(
-        init_data: &[u8],
-        data: &'static [u8],
-        flags: &mut u32,
-    ) -> Result<u32, Error> {
-        let path =
-            BIP32Path::<BIP32_MAX_LENGTH>::read(init_data).map_err(|_| Error::DataInvalid)?;
-
-        verify_bip32_path(&path)?;
-
-        let unsigned_hash = Self::sha256_digest(data)?;
-
-        let ui = SignUI {
-            path,
-            hash: unsigned_hash,
-        };
-
-        unsafe { ui.show(flags) }
-            .map_err(|_| Error::ExecutionError)
-            .map(|_| 0)
-    }
 }
 
-impl ApduHandler for Sign {
+impl ApduHandler for SignFelt {
     #[inline(never)]
     fn handle<'apdu>(
         flags: &mut u32,
@@ -95,19 +62,47 @@ impl ApduHandler for Sign {
         *tx = 0;
 
         if let Some(upload) = Uploader::new(Self).upload(&buffer)? {
-            *tx = Self::start_sign(upload.first, upload.data, flags)?;
-        }
+            let req_confirmation = upload.p2 >= 1;
 
-        Ok(())
+            let path = BIP32Path::<BIP32_MAX_LENGTH>::read(upload.first)
+                .map_err(|_| Error::DataInvalid)?;
+            verify_bip32_path(&path)?;
+
+            if upload.data.len() != 32 {
+                return Err(Error::DataInvalid);
+            }
+
+            let unsigned_item = arrayref::array_ref![upload.data, 0, 32];
+
+            let mut ui = SignFeltUI {
+                path,
+                felt: *unsigned_item,
+            };
+
+            if req_confirmation {
+                unsafe { ui.show(flags) }.map_err(|_| Error::ExecutionError)
+            } else {
+                let (sz, code) = ui.accept(buffer.write());
+
+                if code != Error::Success as u16 {
+                    Err(Error::try_from(code).map_err(|_| Error::ExecutionError)?)
+                } else {
+                    *tx = sz as u32;
+                    Ok(())
+                }
+            }
+        } else {
+            Ok(())
+        }
     }
 }
 
-pub(crate) struct SignUI<const B: usize> {
+pub(crate) struct SignFeltUI<const B: usize> {
     path: BIP32Path<B>,
-    hash: [u8; Sign::SIGN_HASH_SIZE],
+    felt: [u8; SignFelt::SIGN_ITEM_SIZE],
 }
 
-impl<const B: usize> Viewable for SignUI<B> {
+impl<const B: usize> Viewable for SignFeltUI<B> {
     fn num_items(&mut self) -> Result<u8, ViewError> {
         Ok(1)
     }
@@ -122,12 +117,12 @@ impl<const B: usize> Viewable for SignUI<B> {
     ) -> Result<u8, ViewError> {
         match item_n {
             0 => {
-                let title_content = pic_str!(b"Sign");
+                let title_content = pic_str!(b"Sign Felt");
                 title[..title_content.len()].copy_from_slice(title_content);
 
-                let mut hex_buf = [0; Sign::SIGN_HASH_SIZE * 2];
+                let mut hex_buf = [0; SignFelt::SIGN_ITEM_SIZE * 2];
                 //this is impossible that will error since the sizes are all checked
-                let len = hex_encode(&self.hash[..], &mut hex_buf).apdu_unwrap();
+                let len = hex_encode(&self.felt[..], &mut hex_buf).apdu_unwrap();
 
                 handle_ui_message(&hex_buf[..len], message, page)
             }
@@ -136,7 +131,7 @@ impl<const B: usize> Viewable for SignUI<B> {
     }
 
     fn accept(&mut self, out: &mut [u8]) -> (usize, u16) {
-        let (parity, _, sig) = match Sign::sign(&self.path, &self.hash[..]) {
+        let (parity, _, sig) = match SignFelt::sign(&self.path, &self.felt[..]) {
             Err(e) => return (0, e as _),
             Ok(k) => k,
         };
@@ -166,10 +161,6 @@ impl<const B: usize> Viewable for SignUI<B> {
 
         out[tx] = parity as u8;
         tx += 1;
-
-        //write unsigned_hash to buffer
-        out[tx..tx + Sign::SIGN_HASH_SIZE].copy_from_slice(&self.hash[..]);
-        tx += Sign::SIGN_HASH_SIZE;
 
         (tx, Error::Success as _)
     }

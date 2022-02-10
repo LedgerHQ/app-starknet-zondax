@@ -113,7 +113,7 @@ impl<const B: usize> SecretKey<B> {
         Curve::Stark256
     }
 
-    pub fn sign(&self, data: &[u8], out: &mut [u8]) -> Result<usize, SignError> {
+    pub fn sign(&self, data: &[u8], out: &mut [u8]) -> Result<(bool, usize), SignError> {
         if out.len() < STARK_SIGN_BUFFER_MIN_LENGTH {
             return Err(SignError::BufferTooSmall);
         }

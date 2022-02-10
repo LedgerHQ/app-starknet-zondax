@@ -2,7 +2,7 @@
   "name": "@zondax/ledger-starkware-app",
   "author": "Zondax GmbH",
   "license": "Apache-2.0",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Node API for Starkware App (Ledger Nano S/X)",
   "main": "./dist/index.js",
   "typings": "./dist/index.d.ts",

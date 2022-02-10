@@ -128,3 +128,48 @@ describe.skip.each(models)('Standard [%s]; sign', function (m) {
     }
   })
 })
+
+const FELT_TEST_DATA = [
+  {
+    name: 'random data',
+    nav: { s: [2, 0], x: [3, 0] },
+    felt: Buffer.alloc(0xA0, 32), //no particular significance
+  }
+]
+
+describe.skip.each(models)('Standard [%s]; felt sign', function (m) {
+  test.each(FELT_TEST_DATA)('sign felt', async function (data) {
+    const sim = new Zemu(m.path)
+    try {
+      await sim.start({ ...defaultOptions, model: m.name })
+      const app = new StarkwareApp(sim.getTransport())
+      const msg = data.felt
+      const respReq = app.signFelt(APP_DERIVATION, msg)
+
+      await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000)
+
+      const navigation = m.name == 'nanox' ? data.nav.x : data.nav.s
+      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-sign-felt-${data.name}`, navigation)
+
+      const resp = await respReq
+
+      console.log(resp, m.name, data.name)
+
+      expect(resp.returnCode).toEqual(0x9000)
+      expect(resp.errorMessage).toEqual('No errors')
+      expect(resp).toHaveProperty('r')
+      expect(resp).toHaveProperty('s')
+
+      const resp_addr = await app.getPubKey(APP_DERIVATION)
+
+      let signatureOK = true
+      const keypair = stark_ec.getKeyPairFromPublicKey(resp_addr.publicKey.toString('hex'));
+
+      signatureOK = stark_ec.verify(keypair, resp.hash, [resp.r.toString('hex'), resp.s.toString('hex')]);
+
+      expect(signatureOK).toEqual(true)
+    } finally {
+      await sim.close()
+    }
+  })
+})
