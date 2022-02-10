@@ -101,7 +101,7 @@ pub fn verify_bip32_path<const B: usize>(path: &BIP32Path<B>) -> Result<(), Apdu
     }
 }
 
-pub enum ConvertError<const R: usize = 32, const S: usize = 32> {
+pub enum ConvertError<const R: usize, const S: usize> {
     /// The DER prefix (at index 0) found was different than the expected 0x30
     InvalidDERPrefix(u8),
     /// The R marker was different than expected (0x02)

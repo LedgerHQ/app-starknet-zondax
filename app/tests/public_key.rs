@@ -21,7 +21,7 @@ use constants::{
 };
 
 #[test]
-#[should_panic(message = "not yet implemented")]
+#[should_panic(expected = "not yet implemented")]
 fn public_key() {
     let mut flags = 0u32;
     let mut tx = 0u32;
