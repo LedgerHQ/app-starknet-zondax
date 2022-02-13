@@ -34,3 +34,4 @@ no-std-compat = { version = "0.4", features = ["std"] }
 serial_test = "0.5"
 zuit = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark" }
 bolos = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark", features = ["derive-debug"] }
+hex = "0.4.3"

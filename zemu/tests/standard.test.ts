@@ -133,7 +133,7 @@ const FELT_TEST_DATA = [
   {
     name: 'random data',
     nav: { s: [2, 0], x: [3, 0] },
-    felt: Buffer.alloc(0xA0, 32), //no particular significance
+    felt: Buffer.alloc(32, 0xA0), //no particular significance
   }
 ]
 

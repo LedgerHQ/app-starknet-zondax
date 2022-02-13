@@ -136,7 +136,7 @@ impl<const B: usize> Viewable for SignUI<B> {
     }
 
     fn accept(&mut self, out: &mut [u8]) -> (usize, u16) {
-        let (parity, _, sig) = match Sign::sign(&self.path, &self.hash[..]) {
+        let (parity, sig_len, sig) = match Sign::sign(&self.path, &self.hash[..]) {
             Err(e) => return (0, e as _),
             Ok(k) => k,
         };
@@ -159,7 +159,7 @@ impl<const B: usize> Viewable for SignUI<B> {
             tx += 32;
 
             //write as R S V
-            if convert_der_to_rs(&sig, r, s).is_err() {
+            if convert_der_to_rs(&sig[..sig_len], r, s).is_err() {
                 return (0, Error::ExecutionError as _);
             }
         }

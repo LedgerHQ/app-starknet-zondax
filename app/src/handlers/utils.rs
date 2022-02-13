@@ -101,6 +101,7 @@ pub fn verify_bip32_path<const B: usize>(path: &BIP32Path<B>) -> Result<(), Apdu
     }
 }
 
+#[cfg_attr(any(test, feature = "derive-debug"), derive(Debug))]
 pub enum ConvertError<const R: usize, const S: usize> {
     /// The DER prefix (at index 0) found was different than the expected 0x30
     InvalidDERPrefix(u8),
@@ -167,7 +168,7 @@ pub fn convert_der_to_rs<const R: usize, const S: usize>(
     }
 
     //check that the input slice is at least as long as the encoded len
-    if sig.len() - 2 >= payload_len {
+    if sig.len() - 2 < payload_len {
         return Err(ConvertError::TooShort);
     }
 
@@ -204,4 +205,24 @@ pub fn convert_der_to_rs<const R: usize, const S: usize>(
     out_s[PAYLOADLEN - s_len..].copy_from_slice(s);
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const SAMPLE_HEX_SIGNATURE: &str = "3044022006449336f482fe9e9b5eeee8f59e6fcbcf332c11ea1c4332fa6432254ebb12f202200176efcdcd23330c2d11fa4d8cfed0969b79cd3557bf2b36e20bf8f7658cabfe";
+
+    #[test]
+    fn convert_sig() {
+        let data = hex::decode(SAMPLE_HEX_SIGNATURE).unwrap();
+
+        let mut out_r = [0; 32];
+        let mut out_s = [0; 32];
+
+        convert_der_to_rs(&data[..], &mut out_r, &mut out_s).unwrap();
+
+        assert_eq!(&out_r[..], &data[4..4 + 32]);
+        assert_eq!(&out_s[..], &data[4 + 32 + 2..4 + 32 + 2 + 32])
+    }
 }
