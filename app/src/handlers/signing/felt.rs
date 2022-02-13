@@ -39,14 +39,24 @@ impl SignFelt {
         path: &BIP32Path<LEN>,
         data: &[u8],
     ) -> Result<(bool, usize, [u8; 100]), Error> {
-        let sk = Curve::Stark256.to_secret(path);
-
         let mut out = [0; 100];
-        let (parity, sz) = sk
-            .sign(data, &mut out[..])
-            .map_err(|_| Error::ExecutionError)?;
+
+        let (parity, sz) = Self::sign_into(path, data, &mut out)?;
 
         Ok((parity, sz, out))
+    }
+
+    #[inline(never)]
+    pub fn sign_into<const LEN: usize>(
+        path: &BIP32Path<LEN>,
+        data: &[u8],
+        out: &mut [u8; 100],
+    ) -> Result<(bool, usize), Error> {
+        let sk = Curve::Stark256.to_secret(path);
+
+        let (parity, sz) = sk.sign(data, out).map_err(|_| Error::ExecutionError)?;
+
+        Ok((parity, sz))
     }
 }
 
@@ -131,7 +141,7 @@ impl<const B: usize> Viewable for SignFeltUI<B> {
     }
 
     fn accept(&mut self, out: &mut [u8]) -> (usize, u16) {
-        let (parity, _, sig) = match SignFelt::sign(&self.path, &self.felt[..]) {
+        let (parity, sig_len, sig) = match SignFelt::sign(&self.path, &self.felt[..]) {
             Err(e) => return (0, e as _),
             Ok(k) => k,
         };
@@ -154,7 +164,7 @@ impl<const B: usize> Viewable for SignFeltUI<B> {
             tx += 32;
 
             //write as R S V
-            if convert_der_to_rs(&sig, r, s).is_err() {
+            if convert_der_to_rs(&sig[..sig_len], r, s).is_err() {
                 return (0, Error::ExecutionError as _);
             }
         }
