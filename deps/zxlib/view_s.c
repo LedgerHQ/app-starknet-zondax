@@ -176,7 +176,7 @@ blind_sign_toggle_t blind_sign;
 void h_blind_sign_toggle() {
     blind_sign.toggle = !blind_sign.toggle;
     h_blind_sign_update();
-    view_idle_show(1, NULL);
+    view_idle_show(2, NULL);
 }
 
 void h_blind_sign_update() {
