@@ -15,7 +15,7 @@
  ******************************************************************************* */
 
 import Zemu from '@zondax/zemu'
-import { APP_DERIVATION, cartesianProduct, defaultOptions, models } from './common'
+import { APP_DERIVATION, cartesianProduct, defaultOptions, enableBlindSigning, models } from './common'
 import StarkwareApp from '@zondax/ledger-starkware-app'
 
 import { ec as stark_ec } from 'starknet'
@@ -34,7 +34,7 @@ describe.each(models)('Standard', function(m) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
-      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-mainmenu`, [1, 0, 0, 4, -5])
+      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-mainmenu`, [1, 0, 0, 1, 0, 0, 4, -6])
     } finally {
       await sim.close()
     }
@@ -102,8 +102,11 @@ describe.skip.each(models)('Standard [%s]; sign', function(m) {
 
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000)
 
+      const testcase = `${m.prefix.toLowerCase()}-sign-${data.name}`;
+      await enableBlindSigning(sim, testcase);
+
       const navigation = m.name == 'nanox' ? data.nav.x : data.nav.s
-      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-sign-${data.name}`, navigation)
+      await sim.navigateAndCompareSnapshots('.', testcase, navigation)
 
       const resp = await respReq
 
@@ -148,8 +151,11 @@ describe.skip.each(models)('Standard [%s]; felt sign', function(m) {
 
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000)
 
+      const testcase = `${m.prefix.toLowerCase()}-sign-felt-${data.name}`;
+      await enableBlindSigning(sim, testcase);
+
       const navigation = m.name == 'nanox' ? data.nav.x : data.nav.s
-      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-sign-felt-${data.name}`, navigation)
+      await sim.navigateAndCompareSnapshots('.', testcase, navigation);
 
       const resp = await respReq
 
