@@ -71,6 +71,11 @@ impl ApduHandler for SignFelt {
 
         *tx = 0;
 
+        if !super::blind_sign_toggle::blind_sign_enabled() {
+            sys::zemu_log_stack("blind_signing disabled\x00");
+            return Err(Error::ApduCodeConditionsNotSatisfied);
+        }
+
         if let Some(upload) = Uploader::new(Self).upload(&buffer)? {
             let req_confirmation = upload.p2 >= 1;
 
