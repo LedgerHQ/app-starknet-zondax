@@ -33,6 +33,9 @@ use crate::{
 mod felt;
 pub use felt::SignFelt;
 
+#[cfg(feature = "blind-sign-toggle")]
+mod blind_sign_toggle;
+
 pub struct Sign;
 
 impl Sign {

@@ -48,6 +48,9 @@ void os_exit(uint32_t id) {
 const ux_menu_entry_t menu_main[] = {
     {NULL, NULL, 0, &C_icon_app, MENU_MAIN_APP_LINE1, BACKEND_LAZY.key, 33, 12},
     {NULL, rs_h_expert_toggle, 0, &C_icon_app, "Expert mode:", BACKEND_LAZY.value, 33, 12},
+#if defined(BLIND_SIGN_TOGGLE)
+    {NULL, h_blind_sign_toggle, 0, &C_icon_app, "Signing mode:", blind_sign.message, 33, 12},
+#endif
     {NULL, NULL, 0, &C_icon_app, APPVERSION_LINE1, APPVERSION_LINE2, 33, 12},
 
     {NULL,
@@ -166,6 +169,24 @@ static unsigned int view_message_button(unsigned int button_mask, unsigned int b
     }
     return 0;
 }
+
+#if defined(BLIND_SIGN_TOGGLE)
+blind_sign_toggle_t blind_sign;
+
+void h_blind_sign_toggle() {
+    blind_sign.toggle = !blind_sign.toggle;
+    h_blind_sign_update();
+    view_idle_show(1, NULL);
+}
+
+void h_blind_sign_update() {
+    if (blind_sign.toggle) {
+        snprintf(blind_sign.message, 9, "insecure");
+    } else {
+        snprintf(blind_sign.message, 9, "secure");
+    }
+}
+#endif
 
 /********* CRAPOLINES *************/
 
