@@ -33,6 +33,8 @@ use crate::{
 mod felt;
 pub use felt::SignFelt;
 
+mod blind_sign_toggle;
+
 pub struct Sign;
 
 impl Sign {
@@ -91,8 +93,12 @@ impl ApduHandler for Sign {
         buffer: ApduBufferRead<'apdu>,
     ) -> Result<(), Error> {
         sys::zemu_log_stack("Sign::handle\x00");
-
         *tx = 0;
+
+        if !blind_sign_toggle::blind_sign_enabled() {
+            sys::zemu_log_stack("blind_signing disabled\x00");
+            return Err(Error::ApduCodeConditionsNotSatisfied);
+        }
 
         if let Some(upload) = Uploader::new(Self).upload(&buffer)? {
             *tx = Self::start_sign(upload.first, upload.data, flags)?;

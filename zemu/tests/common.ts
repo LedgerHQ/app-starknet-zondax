@@ -1,4 +1,4 @@
-import { DEFAULT_START_OPTIONS, DeviceModel } from '@zondax/zemu'
+import Zemu, { DEFAULT_START_OPTIONS, DeviceModel } from '@zondax/zemu'
 
 const Resolve = require('path').resolve
 
@@ -27,3 +27,7 @@ type MapCartesian<T extends any[][]> = {
 
 export const cartesianProduct = <T extends any[][]>(...arr: T): MapCartesian<T>[] =>
   arr.reduce((a, b) => a.flatMap(c => b.map(d => [...c, d])), [[]]) as MapCartesian<T>[]
+
+export async function enableBlindSigning(sim: Zemu, testcase: string): Promise<void> {
+  await sim.navigateAndCompareUntilText('.', testcase, "Signing mode");
+}

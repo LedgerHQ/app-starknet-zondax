@@ -13,7 +13,8 @@ crate-type = ["staticlib", "rlib"]
 [features]
 dev = []
 derive-debug = []
-default = ["derive-debug"]
+blind-sign-toggle = []
+default = ["derive-debug", "blind-sign-toggle"]
 
 [dependencies]
 bolos = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark" }

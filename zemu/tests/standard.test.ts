@@ -15,13 +15,13 @@
  ******************************************************************************* */
 
 import Zemu from '@zondax/zemu'
-import { APP_DERIVATION, cartesianProduct, defaultOptions, models } from './common'
+import { APP_DERIVATION, cartesianProduct, defaultOptions, enableBlindSigning, models } from './common'
 import StarkwareApp from '@zondax/ledger-starkware-app'
 
 import { ec as stark_ec } from 'starknet'
 
-describe.each(models)('Standard', function (m) {
-  test('can start and stop container', async function () {
+describe.each(models)('Standard', function(m) {
+  test('can start and stop container', async function() {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
@@ -30,17 +30,17 @@ describe.each(models)('Standard', function (m) {
     }
   })
 
-  test('main menu', async function () {
+  test('main menu', async function() {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
-      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-mainmenu`, [1, 0, 0, 4, -5])
+      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-mainmenu`, [1, 0, 0, 1, 0, 0, 4, -6])
     } finally {
       await sim.close()
     }
   })
 
-  test('get app version', async function () {
+  test('get app version', async function() {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
@@ -61,10 +61,10 @@ describe.each(models)('Standard', function (m) {
   })
 })
 
-describe.skip.each(models)('Standard [%s] - pubkey', function (m) {
+describe.skip.each(models)('Standard [%s] - pubkey', function(m) {
   test(
     'get pubkey and addr',
-    async function () {
+    async function() {
       const sim = new Zemu(m.path)
       try {
         await sim.start({ ...defaultOptions, model: m.name })
@@ -91,8 +91,8 @@ const SIGN_TEST_DATA = [
   },
 ]
 
-describe.skip.each(models)('Standard [%s]; sign', function (m) {
-  test.each(SIGN_TEST_DATA)('sign operation', async function (data) {
+describe.skip.each(models)('Standard [%s]; sign', function(m) {
+  test.each(SIGN_TEST_DATA)('sign operation', async function(data) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
@@ -102,8 +102,11 @@ describe.skip.each(models)('Standard [%s]; sign', function (m) {
 
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000)
 
+      const testcase = `${m.prefix.toLowerCase()}-sign-${data.name}`;
+      await enableBlindSigning(sim, testcase);
+
       const navigation = m.name == 'nanox' ? data.nav.x : data.nav.s
-      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-sign-${data.name}`, navigation)
+      await sim.navigateAndCompareSnapshots('.', testcase, navigation)
 
       const resp = await respReq
 
@@ -118,9 +121,9 @@ describe.skip.each(models)('Standard [%s]; sign', function (m) {
       const resp_addr = await app.getPubKey(APP_DERIVATION)
 
       let signatureOK = true
-      const keypair = stark_ec.getKeyPairFromPublicKey(resp_addr.publicKey.toString('hex'));
+      const keypair = stark_ec.getKeyPairFromPublicKey('0x' + resp_addr.publicKey.toString('hex'));
 
-      signatureOK = stark_ec.verify(keypair, resp.hash, [resp.r.toString('hex'), resp.s.toString('hex')]);
+      signatureOK = stark_ec.verify(keypair, '0x' + resp.hash, ['0x' + resp.r.toString('hex'), '0x' + resp.s.toString('hex')]);
 
       expect(signatureOK).toEqual(true)
     } finally {
@@ -133,12 +136,12 @@ const FELT_TEST_DATA = [
   {
     name: 'random data',
     nav: { s: [2, 0], x: [3, 0] },
-    felt: Buffer.alloc(32, 0xA0), //no particular significance
+    felt: Buffer.alloc(32, 0x01), //no particular significance
   }
 ]
 
-describe.skip.each(models)('Standard [%s]; felt sign', function (m) {
-  test.each(FELT_TEST_DATA)('sign felt', async function (data) {
+describe.skip.each(models)('Standard [%s]; felt sign', function(m) {
+  test.each(FELT_TEST_DATA)('sign felt', async function(data) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
@@ -148,8 +151,11 @@ describe.skip.each(models)('Standard [%s]; felt sign', function (m) {
 
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000)
 
+      const testcase = `${m.prefix.toLowerCase()}-sign-felt-${data.name}`;
+      await enableBlindSigning(sim, testcase);
+
       const navigation = m.name == 'nanox' ? data.nav.x : data.nav.s
-      await sim.navigateAndCompareSnapshots('.', `${m.prefix.toLowerCase()}-sign-felt-${data.name}`, navigation)
+      await sim.navigateAndCompareSnapshots('.', testcase, navigation);
 
       const resp = await respReq
 
@@ -163,9 +169,9 @@ describe.skip.each(models)('Standard [%s]; felt sign', function (m) {
       const resp_addr = await app.getPubKey(APP_DERIVATION)
 
       let signatureOK = true
-      const keypair = stark_ec.getKeyPairFromPublicKey(resp_addr.publicKey.toString('hex'));
+      const keypair = stark_ec.getKeyPairFromPublicKey('0x' + resp_addr.publicKey.toString('hex'));
 
-      signatureOK = stark_ec.verify(keypair, resp.hash, [resp.r.toString('hex'), resp.s.toString('hex')]);
+      signatureOK = stark_ec.verify(keypair, '0x' + msg.toString('hex'), ['0x' + resp.r.toString('hex'), '0x' + resp.s.toString('hex')]);
 
       expect(signatureOK).toEqual(true)
     } finally {
