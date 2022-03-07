@@ -47,6 +47,9 @@ uint8_t flow_inside_loop;
 
 UX_STEP_NOCB(ux_idle_flow_1_step, pbb, { &C_icon_app, MENU_MAIN_APP_LINE1, BACKEND_LAZY.key,});
 UX_STEP_CB_INIT(ux_idle_flow_2_step, bn,  rs_h_expert_update(), rs_h_expert_toggle(), { "Expert mode:", BACKEND_LAZY.message, });
+#if defined(BLIND_SIGN_TOGGLE)
+UX_STEP_CB_INIT(ux_idle_flow_blind_toggle_step, bn,  h_blind_sign_update(), h_blind_sign_toggle(), { "Signing mode:", blind_sign.message, });
+#endif
 UX_STEP_NOCB(ux_idle_flow_3_step, bn, { APPVERSION_LINE1, APPVERSION_LINE2, });
 UX_STEP_NOCB(ux_idle_flow_4_step, bn, { "Developed by:", "Zondax.ch", });
 UX_STEP_NOCB(ux_idle_flow_5_step, bn, { "License:", "Apache 2.0", });
@@ -55,6 +58,9 @@ UX_STEP_CB(ux_idle_flow_6_step, pb, os_sched_exit(-1), { &C_icon_dashboard, "Qui
 const ux_flow_step_t *const ux_idle_flow [] = {
   &ux_idle_flow_1_step,
   &ux_idle_flow_2_step,
+#if defined(BLIND_SIGN_TOGGLE)
+  &ux_idle_flow_blind_toggle_step,
+#endif
   &ux_idle_flow_3_step,
   &ux_idle_flow_4_step,
   &ux_idle_flow_5_step,
@@ -91,6 +97,22 @@ const ux_flow_step_t *const ux_review_flow[] = {
   &ux_review_flow_4_step,
   FLOW_END_STEP,
 };
+
+#if defined(BLIND_SIGN_TOGGLE)
+blind_sign_toggle_t blind_sign;
+
+void h_blind_sign_toggle() {
+  blind_sign.toggle = !blind_sign.toggle;
+  ux_flow_init(0, ux_idle_flow, &ux_idle_flow_blind_toggle_step);
+}
+
+void h_blind_sign_update() {
+    snprintf(blind_sign.message, 9, "secure");
+    if (blind_sign.toggle) {
+        snprintf(blind_sign.message, 9, "insecure");
+    }
+}
+#endif
 
 //////////////////////////
 //////////////////////////

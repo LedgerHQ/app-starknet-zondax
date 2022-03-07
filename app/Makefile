@@ -87,8 +87,10 @@ OUTPUT_ELF ?= $(ARTIFACT_OUTPUT_PATH)/output/app_x.elf
 OUTPUT_INSTALLER:= $(ARTIFACT_OUTPUT_PATH)/pkg/installer_x.sh
 endif
 
+RUST_FEATURES:=--features "blind-sign-toggle"
+DEFINES += BLIND_SIGN_TOGGLE
 ifeq ($(APP_TESTING),1)
-RUST_FEATURES:=--features "dev"
+RUST_FEATURES:=$(RUST_FEATURES),"dev"
 endif
 
 $(info TARGET_NAME  = [$(TARGET_NAME)])

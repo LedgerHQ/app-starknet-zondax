@@ -59,6 +59,18 @@ extern struct NanoXBackend BACKEND_LAZY;
 
 #endif
 
+#if defined(BLIND_SIGN_TOGGLE)
+typedef struct blind_sign_toggle_t {
+  bool toggle;
+  char message[8 + 1];
+} blind_sign_toggle_t;
+
+extern blind_sign_toggle_t blind_sign;
+
+void h_blind_sign_toggle();
+void h_blind_sign_update();
+#endif
+
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
 ///////////////////////////////////////////////
