@@ -17,8 +17,8 @@ blind-sign-toggle = []
 default = ["derive-debug", "blind-sign-toggle"]
 
 [dependencies]
-bolos = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark" }
-zemu-sys = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark" }
+bolos = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/lns+" }
+zemu-sys = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/lns+" }
 
 no-std-compat = { version = "0.4" }
 cfg-if = "1.0.0"
@@ -27,12 +27,9 @@ git-testament = { git = "https://github.com/Zondax/git-testament", branch = "fix
 starkware-app-derive = { path = "../app-derive" }
 arrayref = "0.3.6"
 
-[target.thumbv6m-none-eabi.dev-dependencies]
-panic-halt = "0.2.0"
-
 [dev-dependencies]
 no-std-compat = { version = "0.4", features = ["std"] }
 serial_test = "0.5"
-zuit = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark" }
-bolos = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/stark", features = ["derive-debug"] }
+zuit = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/lns+" }
+bolos = { git = "https://github.com/Zondax/ledger-rust", branch = "feat/lns+", features = ["derive-debug"] }
 hex = "0.4.3"

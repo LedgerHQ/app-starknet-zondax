@@ -26,6 +26,7 @@ DOCKER_APP_BIN=$(DOCKER_APP_SRC)/app/bin/app.elf
 
 DOCKER_BOLOS_SDKS=/project/deps/nanos-secure-sdk
 DOCKER_BOLOS_SDKX=/project/deps/nanox-secure-sdk
+DOCKER_BOLOS_SDKSP=/project/deps/nanosplus-secure-sdk
 
 OUTPUT_DIR=$(CURDIR)/build
 
@@ -75,6 +76,8 @@ all:
 	@$(MAKE) buildS
 	@$(MAKE) clean_build
 	@$(MAKE) buildX
+	@$(MAKE) clean_build
+	@$(MAKE) buildSP
 
 .PHONY: check_python
 check_python:
@@ -100,12 +103,19 @@ build_rustS:
 build_rustX:
 	$(call run_docker,$(DOCKER_BOLOS_SDKX),make -C $(DOCKER_APP_SRC) rust)
 
-.PHONY: generate_rustS generate_rustX
+.PHONY: build_rustSP
+build_rustSP:
+	$(call run_docker,$(DOCKER_BOLOS_SDKSP),make -C $(DOCKER_APP_SRC) rust)
+
+.PHONY: generate_rustS generate_rustX generate_rustSP
 generate_rustS:
 	$(MAKE) -C $(CURDIR) TARGET_NAME=TARGET_NANOS BOLOS_SDK=$(CURDIR)/deps/nanos-secure-sdk generate
 
 generate_rustX:
 	$(MAKE) -C $(CURDIR) TARGET_NAME=TARGET_NANOX BOLOS_SDK=$(CURDIR)/deps/nanox-secure-sdk generate
+
+generate_rustSP:
+	$(MAKE) -C $(CURDIR) TARGET_NAME=TARGET_NANOS2 BOLOS_SDK=$(CURDIR)/deps/nanosplus-secure-sdk generate
 
 .PHONY: convert_icon
 convert_icon:
@@ -119,6 +129,10 @@ buildS: build_rustS
 .PHONY: buildX
 buildX: build_rustX
 	$(call run_docker,$(DOCKER_BOLOS_SDKX),make -j $(NPROC) -C $(DOCKER_APP_SRC))
+
+.PHONY: buildSP
+buildSP: build_rustSP
+	$(call run_docker,$(DOCKER_BOLOS_SDKSP),make -j $(NPROC) -C $(DOCKER_APP_SRC))
 
 .PHONY: clean_output
 clean_output:
@@ -148,6 +162,10 @@ shellS:
 shellX:
 	$(call run_docker,$(DOCKER_BOLOS_SDKX) -t,bash)
 
+.PHONY: shellSP
+shellSP:
+	$(call run_docker,$(DOCKER_BOLOS_SDKSP) -t,bash)
+
 .PHONY: load
 load:
 	${OUTPUT_DIR}/pkg/installer_s.sh load
@@ -162,6 +180,14 @@ loadX:
 
 .PHONY: deleteX
 deleteX:
+	${OUTPUT_DIR}/pkg/installer_x.sh delete
+
+.PHONY: loadSP
+loadSP:
+	${OUTPUT_DIR}/pkg/installer_x.sh load
+
+.PHONY: deleteSP
+deleteSP:
 	${OUTPUT_DIR}/pkg/installer_x.sh delete
 
 .PHONY: show_info_recovery_mode
@@ -193,6 +219,11 @@ dev_ca: check_python
 .PHONY: dev_caX
 dev_caX: check_python
 	@python -m ledgerblue.setupCustomCA --targetId 0x33000004 --public $(SCP_PUBKEY) --name zondax
+
+# This target will setup a custom developer certificate
+.PHONY: dev_caX
+dev_caSP: check_python
+	@python -m ledgerblue.setupCustomCA --targetId 0x33100004 --public $(SCP_PUBKEY) --name zondax
 
 .PHONY: dev_ca_delete
 dev_ca_delete: check_python
