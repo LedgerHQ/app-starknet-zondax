@@ -93,7 +93,8 @@ ifeq ($(TARGET_NAME),TARGET_NANOS2)
 ICONNAME:=$(CURDIR)/../nanox_icon.gif
 OUTPUT_ELF ?= $(ARTIFACT_OUTPUT_PATH)/output/app_sp.elf
 OUTPUT_INSTALLER:= $(ARTIFACT_OUTPUT_PATH)/pkg/installer_sp.sh
-RUST_TARGET := thumbv8m.main-none-eabi
+RUST_TARGET := thumbv6m-none-eabi
+# RUST_TARGET := thumbv8m.main-none-eabi
 endif
 
 RUST_FEATURES:=--features "blind-sign-toggle"
