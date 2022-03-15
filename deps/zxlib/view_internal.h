@@ -57,6 +57,21 @@ typedef struct NanoXBackend {
 
 extern struct NanoXBackend BACKEND_LAZY;
 
+#elif defined (TARGET_NANOS2)
+
+#define KEY_SIZE 63
+#define MESSAGE_SIZE 4095
+
+typedef struct NanoSPBackend {
+  uint8_t key[KEY_SIZE + 1];
+  uint8_t message[MESSAGE_SIZE + 1];
+  uintptr_t viewable_size;
+  bool expert;
+  bool flow_inside_loop;
+} NanoSPBackend;
+
+extern struct NanoSPBackend BACKEND_LAZY;
+
 #endif
 
 #if defined(BLIND_SIGN_TOGGLE)
