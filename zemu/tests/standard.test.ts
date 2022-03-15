@@ -86,7 +86,7 @@ describe.skip.each(models)('Standard [%s] - pubkey', function(m) {
 const SIGN_TEST_DATA = [
   {
     name: 'blind sign',
-    nav: { s: [2, 0], x: [3, 0] },
+    nav: { s: [2, 0], x: [3, 0], sp: [3, 0] },
     op: Buffer.from('hello@zondax.ch'),
   },
 ]
@@ -105,7 +105,7 @@ describe.skip.each(models)('Standard [%s]; sign', function(m) {
       const testcase = `${m.prefix.toLowerCase()}-sign-${data.name}`;
       await enableBlindSigning(sim, testcase);
 
-      const navigation = m.name == 'nanox' ? data.nav.x : data.nav.s
+      const navigation = m.name == 'nanox' ? data.nav.x : m.name == "nanosp" ? data.nav.sp : data.nav.s;
       await sim.navigateAndCompareSnapshots('.', testcase, navigation)
 
       const resp = await respReq
@@ -135,7 +135,7 @@ describe.skip.each(models)('Standard [%s]; sign', function(m) {
 const FELT_TEST_DATA = [
   {
     name: 'random data',
-    nav: { s: [2, 0], x: [3, 0] },
+    nav: { s: [2, 0], x: [3, 0], sp: [3, 0] },
     felt: Buffer.alloc(32, 0x01), //no particular significance
   }
 ]
@@ -154,7 +154,7 @@ describe.skip.each(models)('Standard [%s]; felt sign', function(m) {
       const testcase = `${m.prefix.toLowerCase()}-sign-felt-${data.name}`;
       await enableBlindSigning(sim, testcase);
 
-      const navigation = m.name == 'nanox' ? data.nav.x : data.nav.s
+      const navigation = m.name == 'nanox' ? data.nav.x : m.name == "nanosp" ? data.nav.sp : data.nav.s;
       await sim.navigateAndCompareSnapshots('.', testcase, navigation);
 
       const resp = await respReq
