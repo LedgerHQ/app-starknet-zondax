@@ -51,13 +51,13 @@ $(info ************ LOGGING ENABLED ************)
 endif
 
 ifndef COIN
-COIN=ETH
+COIN=SN
 endif
 
 include $(CURDIR)/Makefile.version
 
 $(info COIN  = [$(COIN)])
-ifeq ($(COIN),ETH)
+ifeq ($(COIN),SN)
 # Main app configuration
 DEFINES += APP_STANDARD
 APPNAME = "Starkware"
