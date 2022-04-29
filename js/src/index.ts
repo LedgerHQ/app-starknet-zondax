@@ -18,6 +18,7 @@ import Transport from '@ledgerhq/hw-transport'
 import { serializePath } from './helper'
 import { ResponseAddress, ResponseAppInfo, ResponseBase, ResponseSign, ResponseVersion } from './types'
 import {
+  HASH_MAX_LENGTH,
   CHUNK_SIZE,
   CLA,
   errorCodeToString,
@@ -50,6 +51,17 @@ function processGetAddrResponse(response: Buffer) {
     returnCode,
     errorMessage: errorCodeToString(returnCode),
   }
+}
+
+/* see https://github.com/0xs34n/starknet.js/blob/develop/src/utils/ellipticCurve.ts#L29 */
+function fixHash(hash: string) {
+  let fixed_hash = hash.replace(/^0x0*/, '');
+  if (fixed_hash.length > HASH_MAX_LENGTH) {
+    throw 'invalid hash length';
+  }
+  const s = '0'.repeat(HASH_MAX_LENGTH - fixed_hash.length); 
+  fixed_hash = s.concat(fixed_hash);
+  return fixed_hash+"0";
 }
 
 export default class StarkwareApp {
@@ -227,10 +239,9 @@ export default class StarkwareApp {
     }, processErrorResponse)
   }
 
-  async signFelt(path: string, felt: Buffer, show: boolean = true) {
-    if (felt.length != 32) {
-      throw 'invalid felt length';
-    }
+  async signFelt(path: string, hash: string, show: boolean = true) {
+
+    const felt = Buffer.from(fixHash(hash), "hex");
 
     return this.signGetChunks(path, felt).then(chunks => {
       return this.signSendChunk(1, chunks.length, chunks[0], INS.SIGN_FELT, show ? 1 : 0).then(async response => {

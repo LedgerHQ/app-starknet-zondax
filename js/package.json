@@ -25,7 +25,8 @@
     "url": "https://github.com/zondax/ledger-starkware/issues"
   },
   "dependencies": {
-    "@ledgerhq/hw-transport": "^5.50.0"
+    "@ledgerhq/hw-transport": "^5.50.0",
+    "tsc": "^2.0.4"
   },
   "devDependencies": {
     "@types/ledgerhq__hw-transport": "^4.21.3",

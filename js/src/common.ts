@@ -4,6 +4,8 @@ export const CLA = 0xff
 export const CHUNK_SIZE = 250
 export const APP_KEY = 'ETH'
 
+export const HASH_MAX_LENGTH = 63
+
 export const INS = {
   GET_VERSION: 0x00,
   GET_ADDR: 0x01,
