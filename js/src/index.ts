@@ -33,18 +33,18 @@ import {
 export { LedgerError }
 export * from './types'
 
-function processGetAddrResponse(response: Buffer) {
+function processGetAddrResponse(response: Uint8Array) {
   let partialResponse = response
 
-  const errorCodeData = partialResponse.slice(-2)
+  const errorCodeData = partialResponse.subarray(-2)
   const returnCode = errorCodeData[0] * 256 + errorCodeData[1]
 
   //get public key len (variable)
   const PKLEN = partialResponse[0]
-  const publicKey = Buffer.from(partialResponse.slice(1, 1 + PKLEN))
+  const publicKey = partialResponse.slice(1, 1 + PKLEN)
 
   //"advance" buffer
-  partialResponse = partialResponse.slice(1 + PKLEN)
+  partialResponse = partialResponse.subarray(1 + PKLEN)
 
   return {
     publicKey,
@@ -64,6 +64,12 @@ function fixHash(hash: string) {
   return fixed_hash+"0";
 }
 
+function hexToBytes(hex: string) {
+  for (var bytes = [], c = 0; c < hex.length; c += 2)
+    bytes.push(parseInt(hex.substring(c, c + 2), 16))
+    return Uint8Array.from(bytes);
+}
+
 export default class StarkwareApp {
   transport
 
@@ -74,7 +80,7 @@ export default class StarkwareApp {
     }
   }
 
-  static prepareChunks(message: Buffer, serializedPathBuffer?: Buffer) {
+  static prepareChunks(message: Uint8Array, serializedPathBuffer?: Uint8Array) {
     const chunks = []
 
     // First chunk (only path)
@@ -83,21 +89,20 @@ export default class StarkwareApp {
       chunks.push(serializedPathBuffer!)
     }
 
-    const messageBuffer = Buffer.from(message)
+    const messageBuffer = Uint8Array.from(message)
 
-    const buffer = Buffer.concat([messageBuffer])
-    for (let i = 0; i < buffer.length; i += CHUNK_SIZE) {
+    for (let i = 0; i < messageBuffer.length; i += CHUNK_SIZE) {
       let end = i + CHUNK_SIZE
-      if (i > buffer.length) {
-        end = buffer.length
+      if (i > messageBuffer.length) {
+        end = messageBuffer.length
       }
-      chunks.push(buffer.slice(i, end))
+      chunks.push(messageBuffer.subarray(i, end))
     }
 
     return chunks
   }
 
-  async signGetChunks(path: string, message: Buffer) {
+  async signGetChunks(path: string, message: Uint8Array) {
     return StarkwareApp.prepareChunks(message, serializePath(path))
   }
 
@@ -107,7 +112,7 @@ export default class StarkwareApp {
 
   async getAppInfo(): Promise<ResponseAppInfo> {
     return this.transport.send(0xb0, 0x01, 0, 0).then(response => {
-      const errorCodeData = response.slice(-2)
+      const errorCodeData = response.subarray(-2)
       const returnCode = errorCodeData[0] * 256 + errorCodeData[1]
 
       const result: { errorMessage?: string; returnCode?: LedgerError } = {}
@@ -123,11 +128,11 @@ export default class StarkwareApp {
         result.returnCode = LedgerError.DeviceIsBusy
       } else {
         const appNameLen = response[1]
-        appName = response.slice(2, 2 + appNameLen).toString('ascii')
+        appName = response.subarray(2, 2 + appNameLen).toString('ascii')
         let idx = 2 + appNameLen
         const appVersionLen = response[idx]
         idx += 1
-        appVersion = response.slice(idx, idx + appVersionLen).toString('ascii')
+        appVersion = response.subarray(idx, idx + appVersionLen).toString('ascii')
         idx += appVersionLen
         const appFlagsLen = response[idx]
         idx += 1
@@ -155,20 +160,20 @@ export default class StarkwareApp {
   }
 
   async getPubKey(path: string): Promise<ResponseAddress> {
-    const serializedPath = serializePath(path)
+    const serializedPath = Buffer.from(serializePath(path))
     return this.transport
       .send(CLA, INS.GET_ADDR, P1_VALUES.ONLY_RETRIEVE, 0, serializedPath, [LedgerError.NoErrors])
       .then(processGetAddrResponse, processErrorResponse)
   }
 
   async showPubKey(path: string): Promise<ResponseAddress> {
-    const serializedPath = serializePath(path)
+    const serializedPath = Buffer.from(serializePath(path))
     return this.transport
       .send(CLA, INS.GET_ADDR, P1_VALUES.SHOW_ADDRESS_IN_DEVICE, 0, serializedPath, [LedgerError.NoErrors])
       .then(processGetAddrResponse, processErrorResponse)
   }
 
-  async signSendChunk(chunkIdx: number, chunkNum: number, chunk: Buffer, ins: number = INS.SIGN, p2: number = 0): Promise<ResponseSign> {
+  async signSendChunk(chunkIdx: number, chunkNum: number, chunk: Uint8Array, ins: number = INS.SIGN, p2: number = 0): Promise<ResponseSign> {
     let payloadType = PAYLOAD_TYPE.ADD
     if (chunkIdx === 1) {
       payloadType = PAYLOAD_TYPE.INIT
@@ -178,14 +183,15 @@ export default class StarkwareApp {
     }
 
     return this.transport
-      .send(CLA, ins, payloadType, p2, chunk, [
+      .send(CLA, ins, payloadType, p2, Buffer.from(chunk), [
         LedgerError.NoErrors,
         LedgerError.DataIsInvalid,
         LedgerError.BadKeyHandle,
         LedgerError.SignVerifyError,
       ])
-      .then((response: Buffer) => {
-        const errorCodeData = response.slice(-2)
+      .then((response: Uint8Array) => {
+
+        const errorCodeData = response.subarray(-2)
         const returnCode = errorCodeData[0] * 256 + errorCodeData[1]
         let errorMessage = errorCodeToString(returnCode)
 
@@ -194,15 +200,15 @@ export default class StarkwareApp {
           returnCode === LedgerError.DataIsInvalid ||
           returnCode === LedgerError.SignVerifyError
         ) {
-          errorMessage = `${errorMessage} : ${response.slice(0, response.length - 2).toString('ascii')}`
+          errorMessage = `${errorMessage} : ${response.subarray(0, response.length - 2).toString()}`
         }
 
         if (returnCode === LedgerError.NoErrors && response.length > 2) {
           return {
-            r: response.slice(0, 32),
-            s: response.slice(32, 32 + 32),
+            r: response.subarray(0, 32),
+            s: response.subarray(32, 32 + 32),
             v: response[64],
-            hash: response.slice(65, 65 + 32),
+            hash: response.subarray(65, 65 + 32),
             returnCode: returnCode,
             errorMessage: errorMessage,
           }
@@ -215,15 +221,15 @@ export default class StarkwareApp {
       }, processErrorResponse)
   }
 
-  async sign(path: string, message: Buffer) {
+  async sign(path: string, message: Uint8Array) {
     return this.signGetChunks(path, message).then(chunks => {
       return this.signSendChunk(1, chunks.length, chunks[0], INS.SIGN).then(async response => {
         let result = {
           returnCode: response.returnCode,
           errorMessage: response.errorMessage,
-          hash: null as null | Buffer,
-          r: null as null | Buffer,
-          s: null as null | Buffer,
+          hash: null as null | Uint8Array,
+          r: null as null | Uint8Array,
+          s: null as null | Uint8Array,
           v: null as null | number,
         }
 
@@ -239,18 +245,22 @@ export default class StarkwareApp {
     }, processErrorResponse)
   }
 
+  getFelt(hash: string):Uint8Array {
+    return hexToBytes(fixHash(hash));
+  }
+
   async signFelt(path: string, hash: string, show: boolean = true) {
 
-    const felt = Buffer.from(fixHash(hash), "hex");
+    const felt = hexToBytes(fixHash(hash));
 
     return this.signGetChunks(path, felt).then(chunks => {
       return this.signSendChunk(1, chunks.length, chunks[0], INS.SIGN_FELT, show ? 1 : 0).then(async response => {
         let result = {
           returnCode: response.returnCode,
           errorMessage: response.errorMessage,
-          hash: undefined as undefined | Buffer,
-          r: null as null | Buffer,
-          s: null as null | Buffer,
+          hash: undefined as undefined | Uint8Array,
+          r: null as null | Uint8Array,
+          s: null as null | Uint8Array,
           v: null as null | number,
         }
         for (let i = 1; i < chunks.length; i += 1) {

@@ -4,7 +4,7 @@ export interface ResponseBase {
 }
 
 export interface ResponseAddress extends ResponseBase {
-  publicKey: Buffer
+  publicKey: Uint8Array
 }
 
 export interface ResponseVersion extends ResponseBase {
@@ -28,8 +28,8 @@ export interface ResponseAppInfo extends ResponseBase {
 }
 
 export interface ResponseSign extends ResponseBase {
-  hash: Buffer
-  r: Buffer,
-  s: Buffer,
+  hash: Uint8Array
+  r: Uint8Array,
+  s: Uint8Array,
   v: number,
 }

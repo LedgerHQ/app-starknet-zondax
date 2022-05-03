@@ -1,6 +1,6 @@
 const HARDENED = 0x80000000
 
-export function serializePath(path: string): Buffer {
+export function serializePath(path: string): Uint8Array {
   if (!path.startsWith('m')) {
     throw new Error('Path should start with "m" (e.g "m/44\'/5757\'/5\'/0/3")')
   }
@@ -11,8 +11,10 @@ export function serializePath(path: string): Buffer {
     throw new Error("Invalid path. (e.g \"m/44'/5757'/5'/0/3\")")
   }
 
-  const buf = Buffer.alloc(1 + (pathArray.length - 1) * 4)
-  buf.writeUInt8(pathArray.length - 1) //first byte is the path length
+  const buf = new Uint8Array(1 + (pathArray.length - 1) * 4)
+  buf[0] = (pathArray.length - 1) //first byte is the path length
+
+  const dataview = new DataView(buf.buffer);
 
   for (let i = 1; i < pathArray.length; i += 1) {
     let value = 0
@@ -34,7 +36,8 @@ export function serializePath(path: string): Buffer {
 
     value += childNumber
 
-    buf.writeUInt32BE(value, 1 + 4 * (i - 1))
+    dataview.setUint32(1 + 4 * (i - 1), value);
+
   }
 
   return buf
