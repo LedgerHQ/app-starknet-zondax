@@ -41,7 +41,7 @@ $(info TESTS_ZEMU_DIR        : $(TESTS_ZEMU_DIR))
 $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
-DOCKER_IMAGE=zondax/builder-bolos:latest
+DOCKER_IMAGE=ledger/builder-bolos:latest
 
 ifdef INTERACTIVE
 INTERACTIVE_SETTING:="-i"
@@ -64,7 +64,7 @@ define run_docker
 	-e SCP_PRIVKEY=$(SCP_PRIVKEY) \
 	-e BOLOS_SDK=$(1) \
 	-e BOLOS_ENV=/opt/bolos \
-	-u 501 \
+	-u $(USERID) \
 	-v $(shell pwd):/project \
 	-e COIN=$(COIN) \
 	-e APP_TESTING=$(APP_TESTING) \
