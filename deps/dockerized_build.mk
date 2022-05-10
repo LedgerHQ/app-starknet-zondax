@@ -41,7 +41,7 @@ $(info TESTS_ZEMU_DIR        : $(TESTS_ZEMU_DIR))
 $(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
-DOCKER_IMAGE=zondax/builder-bolos:latest
+DOCKER_IMAGE=ledger/builder-bolos:latest
 
 ifdef INTERACTIVE
 INTERACTIVE_SETTING:="-i"

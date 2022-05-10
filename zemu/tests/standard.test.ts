@@ -16,7 +16,7 @@
 
 import Zemu from '@zondax/zemu'
 import { APP_DERIVATION, cartesianProduct, defaultOptions, enableBlindSigning, models } from './common'
-import StarkwareApp from '@zondax/ledger-starkware-app'
+import Stark from '@ledgerhq/hw-app-starknet'
 
 import { ec as stark_ec } from 'starknet'
 
@@ -44,7 +44,7 @@ describe.each(models)('Standard', function(m) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
-      const app = new StarkwareApp(sim.getTransport())
+      const app = new Stark(sim.getTransport())
       const resp = await app.getVersion()
 
       console.log(resp)
@@ -68,7 +68,7 @@ describe.skip.each(models)('Standard [%s] - pubkey', function(m) {
       const sim = new Zemu(m.path)
       try {
         await sim.start({ ...defaultOptions, model: m.name })
-        const app = new StarkwareApp(sim.getTransport())
+        const app = new Stark(sim.getTransport())
         const resp = await app.getPubKey(APP_DERIVATION)
 
         console.log(resp, m.name)
@@ -96,7 +96,7 @@ describe.skip.each(models)('Standard [%s]; sign', function(m) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
-      const app = new StarkwareApp(sim.getTransport())
+      const app = new Stark(sim.getTransport())
       const msg = data.op
       const respReq = app.sign(APP_DERIVATION, msg)
 
@@ -121,7 +121,7 @@ describe.skip.each(models)('Standard [%s]; sign', function(m) {
       const resp_addr = await app.getPubKey(APP_DERIVATION)
 
       let signatureOK = true
-      const keypair = stark_ec.getKeyPairFromPublicKey('0x' + resp_addr.publicKey.toString('hex'));
+      const keypair = stark_ec.getKeyPairFromPublicKey('0x' + resp_addr.publicKey.toString());
 
       signatureOK = stark_ec.verify(keypair, '0x' + resp.hash, ['0x' + resp.r.toString('hex'), '0x' + resp.s.toString('hex')]);
 
@@ -145,9 +145,9 @@ describe.skip.each(models)('Standard [%s]; felt sign', function(m) {
     const sim = new Zemu(m.path)
     try {
       await sim.start({ ...defaultOptions, model: m.name })
-      const app = new StarkwareApp(sim.getTransport())
+      const app = new Stark(sim.getTransport())
       const msg = data.felt
-      const respReq = app.signFelt(APP_DERIVATION, msg)
+      const respReq = app.signFelt(APP_DERIVATION, msg.toString('hex'))
 
       await sim.waitUntilScreenIsNot(sim.getMainMenuSnapshot(), 20000)
 
@@ -169,7 +169,7 @@ describe.skip.each(models)('Standard [%s]; felt sign', function(m) {
       const resp_addr = await app.getPubKey(APP_DERIVATION)
 
       let signatureOK = true
-      const keypair = stark_ec.getKeyPairFromPublicKey('0x' + resp_addr.publicKey.toString('hex'));
+      const keypair = stark_ec.getKeyPairFromPublicKey('0x' + resp_addr.publicKey.toString());
 
       signatureOK = stark_ec.verify(keypair, '0x' + msg.toString('hex'), ['0x' + resp.r.toString('hex'), '0x' + resp.s.toString('hex')]);
 
