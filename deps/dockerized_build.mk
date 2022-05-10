@@ -18,7 +18,6 @@
 
 TESTS_ZEMU_DIR?=$(CURDIR)/zemu
 TESTS_JS_PACKAGE?=
-TESTS_JS_DIR?=
 
 LEDGER_SRC=$(CURDIR)/app
 DOCKER_APP_SRC=/project
@@ -38,7 +37,6 @@ INTERACTIVE:=$(shell [ -t 0 ] && echo 1)
 USERID:=$(shell id -u)
 $(info USERID                : $(USERID))
 $(info TESTS_ZEMU_DIR        : $(TESTS_ZEMU_DIR))
-$(info TESTS_JS_DIR          : $(TESTS_JS_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
 DOCKER_IMAGE=ledger/builder-bolos:latest
@@ -241,5 +239,4 @@ dev_ca_delete2: check_python
 .PHONY: zemu_install
 zemu_install:
 	# and now install everything
-	cd $(TESTS_JS_DIR) && yarn install && yarn build
 	cd $(TESTS_ZEMU_DIR) && yarn install

@@ -18,8 +18,7 @@
 # BOLOS_SDK IS  DEFINED	 	We use the plain Makefile for Ledger
 # BOLOS_SDK NOT DEFINED		We use a containerized build approach
 
-TESTS_JS_PACKAGE = "@zondax/ledger-starkware-app"
-TESTS_JS_DIR = $(CURDIR)/js
+TESTS_JS_PACKAGE = "@ledgerhq/hw-app-starknet"
 
 ifeq ($(BOLOS_SDK),)
 	include $(CURDIR)/deps/dockerized_build.mk
