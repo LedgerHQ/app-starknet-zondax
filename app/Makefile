@@ -61,8 +61,8 @@ ifeq ($(COIN),SN)
 # Main app configuration
 DEFINES += APP_STANDARD
 APPNAME = "Starkware"
-APPPATH = "2645'/579218131'"
-DEFINES += STARK_BIP32_PATH_0=0x80000A55 STARK_BIP32_PATH_1=0xA2862AD3
+APPPATH = "2645'"
+#DEFINES += STARK_BIP32_PATH_0=0x80000A55
 else
 define error_message
 COIN value not supported: [$(COIN)]
