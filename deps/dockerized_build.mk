@@ -39,7 +39,7 @@ $(info USERID                : $(USERID))
 $(info TESTS_ZEMU_DIR        : $(TESTS_ZEMU_DIR))
 $(info TESTS_JS_PACKAGE      : $(TESTS_JS_PACKAGE))
 
-DOCKER_IMAGE=ledger/builder-bolos:latest
+DOCKER_IMAGE=starknet-builder:latest
 
 ifdef INTERACTIVE
 INTERACTIVE_SETTING:="-i"
@@ -62,8 +62,9 @@ define run_docker
 	-e SCP_PRIVKEY=$(SCP_PRIVKEY) \
 	-e BOLOS_SDK=$(1) \
 	-e BOLOS_ENV=/opt/bolos \
-	-u $(USERID) \
+	-u 501 \
 	-v $(shell pwd):/project \
+	-v $(shell pwd)/deps/ledger-rust:/ledger-rust \
 	-e COIN=$(COIN) \
 	-e APP_TESTING=$(APP_TESTING) \
 	$(DOCKER_IMAGE) "$(2)"
@@ -72,10 +73,6 @@ endef
 all:
 	@$(MAKE) clean_build
 	@$(MAKE) buildS
-	@$(MAKE) clean_build
-	@$(MAKE) buildX
-	@$(MAKE) clean_build
-	@$(MAKE) buildSP
 
 .PHONY: check_python
 check_python:
