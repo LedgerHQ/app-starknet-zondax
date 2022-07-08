@@ -19,9 +19,9 @@
 extern "C" {
 #endif
 
-    #define MENU_MAIN_APP_LINE1             "Starkware"
-    #define MENU_MAIN_APP_LINE2             "DO NOT USE"
-    #define APPVERSION_LINE1                "DO NOT USE"
+    #define MENU_MAIN_APP_LINE1             "STARKNET"
+    #define MENU_MAIN_APP_LINE2             "WIP"
+    #define APPVERSION_LINE1                "VERSION:"
     #define APPVERSION_LINE2                ("v" APPVERSION)
 
 #ifdef __cplusplus
