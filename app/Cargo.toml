@@ -17,8 +17,8 @@ blind-sign-toggle = []
 default = ["derive-debug", "blind-sign-toggle"]
 
 [dependencies]
-bolos = { git = "https://github.com/yogh333/ledger-rust" }
-zemu-sys = { git = "https://github.com/yogh333/ledger-rust" }
+bolos = { path = "/ledger-rust/bolos" }
+zemu-sys = { path = "/ledger-rust/zemu" }
 
 no-std-compat = { version = "0.4" }
 cfg-if = "1.0.0"
@@ -30,6 +30,6 @@ arrayref = "0.3.6"
 [dev-dependencies]
 no-std-compat = { version = "0.4", features = ["std"] }
 serial_test = "0.5"
-zuit = { git = "https://github.com/yogh333/ledger-rust" }
-bolos = { git = "https://github.com/yogh333/ledger-rust", features = ["derive-debug"] }
+zuit = { path = "/ledger-rust/zuit" }
+bolos = { path = "/ledger-rust/bolos", features = ["derive-debug"] }
 hex = "0.4.3"

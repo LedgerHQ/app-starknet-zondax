@@ -7,3 +7,6 @@
 [submodule "nanosplus-secure-sdk"]
 	path = deps/nanosplus-secure-sdk
 	url = https://github.com/LedgerHQ/nanosplus-secure-sdk
+[submodule "deps/ledger-rust"]
+	path = deps/ledger-rust
+	url = git@github.com:yogh333/ledger-rust.git

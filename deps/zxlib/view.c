@@ -39,7 +39,7 @@ void io_seproxyhal_display(const bagl_element_t *element) {
 }
 void view_init(void) {
 #if defined(BLIND_SIGN_TOGGLE)
-    blind_sign.toggle = false;
+    blind_sign.toggle = true;
     h_blind_sign_update();
 #endif
     UX_INIT();

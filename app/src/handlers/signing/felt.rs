@@ -67,7 +67,7 @@ impl ApduHandler for SignFelt {
         tx: &mut u32,
         buffer: ApduBufferRead<'apdu>,
     ) -> Result<(), Error> {
-        sys::zemu_log_stack("Sign::handle\x00");
+        sys::zemu_log_stack("SignFelt::handle\x00");
 
         *tx = 0;
 
