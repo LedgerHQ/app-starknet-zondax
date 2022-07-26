@@ -73,7 +73,7 @@ impl From<UploaderError> for ApduError {
 
 pub struct UploaderOutput {
     pub p2: u8,
-    pub first: &'static [u8],
+    pub dpath_data: &'static [u8],
     pub data: &'static [u8],
     accessor: BUFFERAccessors,
 }
@@ -141,7 +141,7 @@ impl Uploader {
 
             Ok(Some(UploaderOutput {
                 p2: data[0],
-                first: head,
+                dpath_data: head,
                 data: tail,
                 accessor: self.accessor,
             }))

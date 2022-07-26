@@ -20,6 +20,7 @@ use crate::constants::{instructions::*, ApduError};
 
 use crate::handlers::public_key::GetPublicKey;
 use crate::handlers::signing::{Sign, SignFelt};
+use crate::handlers::clear_signing::ClearSign;
 use crate::handlers::version::GetVersion;
 
 #[cfg(feature = "dev")]
@@ -57,6 +58,7 @@ pub fn apdu_dispatch<'apdu>(
         INS_GET_PUBLIC_KEY => GetPublicKey::handle(flags, tx, apdu_buffer),
         INS_SIGN => Sign::handle(flags, tx, apdu_buffer),
         INS_SIGN_FELT => SignFelt::handle(flags, tx, apdu_buffer),
+        INS_CLEAR_SIGN => ClearSign::handle(flags, tx, apdu_buffer),
 
         #[cfg(feature = "dev")]
         _ => Debug::handle(flags, tx, apdu_buffer),

@@ -79,7 +79,7 @@ impl ApduHandler for SignFelt {
         if let Some(upload) = Uploader::new(Self).upload(&buffer)? {
             let req_confirmation = upload.p2 >= 1;
 
-            let path = BIP32Path::<BIP32_MAX_LENGTH>::read(upload.first)
+            let path = BIP32Path::<BIP32_MAX_LENGTH>::read(upload.dpath_data)
                 .map_err(|_| Error::DataInvalid)?;
             verify_bip32_path(&path)?;
 

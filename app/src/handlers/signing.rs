@@ -101,7 +101,7 @@ impl ApduHandler for Sign {
         }
 
         if let Some(upload) = Uploader::new(Self).upload(&buffer)? {
-            *tx = Self::start_sign(upload.first, upload.data, flags)?;
+            *tx = Self::start_sign(upload.dpath_data, upload.data, flags)?;
         }
 
         Ok(())

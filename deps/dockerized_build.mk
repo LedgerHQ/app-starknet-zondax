@@ -72,7 +72,7 @@ endef
 
 all:
 	@$(MAKE) clean_build
-	@$(MAKE) buildS
+	@$(MAKE) buildSP
 
 .PHONY: check_python
 check_python:

@@ -1,0 +1,24 @@
+ERROR SHOWING DATA BackTrace:
+----------------------------
+
+#0  zemu_sys::ui_toolkit::Zui<zemu_sys::ui_toolkit::backends::nanos::NanoSBackend, 18>::show_error<zemu_sys::ui_toolkit::backends::nanos::NanoSBackend, 18> (
+    self=0x200006f8 <zemu_sys::ui_toolkit::backends::nanos::__IMPL_LAZY_RUST_ZUI::LAZY>) at /ledger-rust/zemu/src/ui_toolkit.rs:364
+#1  0x40006d90 in zemu_sys::ui_toolkit::backends::nanos::{impl#1}::update_review (ui=0x200006f8 <zemu_sys::ui_toolkit::backends::nanos::__IMPL_LAZY_RUST_ZUI::LAZY>)
+    at /ledger-rust/zemu/src/ui_toolkit/backends/nanos.rs:157
+#2  0x40006ffe in zemu_sys::ui_toolkit::Zui<zemu_sys::ui_toolkit::backends::nanos::NanoSBackend, 18>::review_action<zemu_sys::ui_toolkit::backends::nanos::NanoSBackend, 18> (self=<optimized out>)
+    at /ledger-rust/zemu/src/ui_toolkit.rs:188
+#3  zemu_sys::ui_toolkit::backends::nanos::cabi::rs_h_review_button_both () 
+at /ledger-rust/zemu/src/ui_toolkit/backends/nanos.rs:278
+#4  0x40002d08 in view_review_button (button_mask=536872696, button_mask_counter=<optimized out>) 
+at .//../deps/zxlib/view_s.c:101
+#5  0x40000b66 in io_seproxyhal_button_push (button_callback=0x4000227d <USBD_WEBUSB_DataIn>, new_button_mask=<optimized out>) 
+at /project/deps/nanos-secure-sdk/src/os_io_seproxyhal.c:1117
+#6  0x4000055a in io_event (channel=<optimized out>) 
+at .//c/main.c:31
+#7  0x40000920 in io_seproxyhal_handle_event () 
+at /project/deps/nanos-secure-sdk/src/os_io_seproxyhal.c:492
+#8  0x40000d3c in io_exchange (channel=16 '\020', tx_len=<optimized out>) 
+at /project/deps/nanos-secure-sdk/src/os_io_seproxyhal.c:1569
+#9  0x400000a0 in main () at .//c/main.c:128
+
+

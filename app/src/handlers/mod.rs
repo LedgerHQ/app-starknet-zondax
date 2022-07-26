@@ -16,6 +16,7 @@
 pub mod public_key;
 pub mod signing;
 pub mod version;
+pub mod clear_signing;
 
 #[cfg(feature = "dev")]
 pub mod dev;
@@ -28,13 +29,14 @@ pub mod resources {
     use bolos::{lazy_static, new_swapping_buffer, SwappingBuffer};
 
     #[lazy_static]
-    pub static mut BUFFER: Lock<SwappingBuffer<'static, 'static, 0xFF, 0x1FFF>, BUFFERAccessors> =
-        Lock::new(new_swapping_buffer!(0xFF, 0x1FFF));
+    pub static mut BUFFER: Lock<SwappingBuffer<'static, 'static, 0x1FF, 0x1FFF>, BUFFERAccessors> =
+        Lock::new(new_swapping_buffer!(0x1FF, 0x1FFF));
 
     #[derive(Clone, Copy, PartialEq, Eq)]
     pub enum BUFFERAccessors {
         Sign,
         SignFelt,
+        ClearSign,
         #[cfg(feature = "dev")]
         Debug,
     }
@@ -48,6 +50,12 @@ pub mod resources {
     impl From<super::signing::SignFelt> for BUFFERAccessors {
         fn from(_: super::signing::SignFelt) -> Self {
             Self::SignFelt
+        }
+    }
+
+    impl From<super::clear_signing::ClearSign> for BUFFERAccessors {
+        fn from(_: super::clear_signing::ClearSign) -> Self {
+            Self::ClearSign
         }
     }
 

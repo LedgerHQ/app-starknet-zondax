@@ -88,6 +88,11 @@ impl<'apdu> ApduBufferRead<'apdu> {
         self.inner[APDU_INDEX_P2]
     }
 
+    /// Alias to idx APDU_INDEX_LEN
+    pub fn plen(&self) -> u8 {
+        self.inner[APDU_INDEX_LEN]
+    }
+
     /// Return the remaining part of the buffer if present
     ///
     /// It's expected the buffer to have the prepended len at idx APDU_INDEX_LEN,
