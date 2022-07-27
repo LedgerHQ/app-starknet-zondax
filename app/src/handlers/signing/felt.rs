@@ -95,7 +95,18 @@ impl ApduHandler for SignFelt {
             };
 
             if req_confirmation {
-                unsafe { ui.show(flags) }.map_err(|_| Error::ExecutionError)
+                match unsafe { ui.show(flags) } {
+                    Ok((val, code)) => {
+                        if code != Error::Success as u16 {
+                            Err(Error::try_from(code).map_err(|_| Error::ExecutionError)?)
+                        }
+                        else {
+                            *tx = val as u32;
+                            Ok(())
+                        }
+                    },
+                    Err(e) => Err(Error::ExecutionError),
+                }
             } else {
                 let (sz, code) = ui.accept(buffer.write());
 

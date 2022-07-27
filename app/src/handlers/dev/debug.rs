@@ -49,7 +49,18 @@ impl ApduHandler for Debug {
             .map_err(|_| Error::ExecutionError)?;
         zbuffer.write(payload).map_err(|_| Error::ExecutionError)?;
 
-        unsafe { Self.show(flags).map_err(|_| Error::ExecutionError) }
+        match unsafe { Self.show(flags) } {
+            Ok((val, code)) => {
+                if code != Error::Success as u16 {
+                    Err(Error::ExecutionError)
+                }
+                else {
+                    *tx = val as u32;
+                    Ok(())
+                }
+            },
+            Err(e) => Err(Error::ExecutionError),
+        }
     }
 }
 

@@ -13,7 +13,7 @@
 *  See the License for the specific language governing permissions and
 *  limitations under the License.
 ********************************************************************************/
-use bolos::nvm::NVMError;
+use bolos::{PIC, lazy_static, nvm::NVMError};
 
 use crate::{
     constants::ApduError,
@@ -26,7 +26,7 @@ use crate::{
 
 use super::ApduBufferRead;
 
-#[bolos::lazy_static]
+#[lazy_static]
 static mut INIT_LEN: usize = 0;
 
 pub struct Uploader {
