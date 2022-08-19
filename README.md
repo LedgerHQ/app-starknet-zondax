@@ -1,12 +1,9 @@
 # Ledger Starkware app
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![GithubActions](https://github.com/zondax/ledger-starkware/actions/workflows/main.yaml/badge.svg)](https://github.com/Zondax/ledger-starkware/blob/main/.github/workflows/main.yaml)
 
 -------------------
 
-![zondax](docs/zondax.jpg)
-
-_Please visit our website at [zondax.ch](zondax.ch)_
+![zondax](docs/ledger.png)
 
 ------------------
 This project contains the Starkware app (https://starkware.co/) for Ledger Nano S and X.
