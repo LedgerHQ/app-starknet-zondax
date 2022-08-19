@@ -3,7 +3,7 @@
 
 -------------------
 
-![zondax](docs/ledger.png)
+![ledger](docs/ledger.png)
 
 ------------------
 This project contains the Starkware app (https://starkware.co/) for Ledger Nano S and X.
