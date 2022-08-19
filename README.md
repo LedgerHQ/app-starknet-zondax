@@ -1,9 +1,9 @@
-# Ledger Starkware app
+# Ledger Starknet app
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 -------------------
 
-![ledger](docs/ledger.png)
+<img src="docs/ledger.png" width="75%">
 
 ------------------
 This project contains the Starkware app (https://starkware.co/) for Ledger Nano S and X.
