@@ -181,11 +181,11 @@ deleteX:
 
 .PHONY: loadSP
 loadSP:
-	${OUTPUT_DIR}/pkg/installer_x.sh load
+	${OUTPUT_DIR}/pkg/installer_sp.sh load
 
 .PHONY: deleteSP
 deleteSP:
-	${OUTPUT_DIR}/pkg/installer_x.sh delete
+	${OUTPUT_DIR}/pkg/installer_sp.sh delete
 
 .PHONY: show_info_recovery_mode
 show_info_recovery_mode:

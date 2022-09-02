@@ -84,7 +84,18 @@ impl ApduHandler for GetPublicKey {
         let mut ui = unsafe { ui.assume_init() };
 
         if req_confirmation {
-            unsafe { ui.show(flags) }.map_err(|_| Error::ExecutionError)
+            match unsafe { ui.show(flags) } {
+                Ok((val, code)) => {
+                    if code != Error::Success as u16 {
+                        Err(Error::try_from(code).map_err(|_| Error::ExecutionError)?)
+                    }
+                    else {
+                        *tx = val as u32;
+                        Ok(())
+                    }
+                },
+                Err(e) => Err(Error::ExecutionError),
+            }
         } else {
             //we don't need to show so we execute the "accept" already
             // this way the "formatting" to `buffer` is all in the ui code
