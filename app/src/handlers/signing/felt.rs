@@ -71,12 +71,64 @@ impl ApduHandler for SignFelt {
 
         *tx = 0;
 
-        if !super::blind_sign_toggle::blind_sign_enabled() {
+        /*if !super::blind_sign_toggle::blind_sign_enabled() {
             sys::zemu_log_stack("blind_signing disabled\x00");
             return Err(Error::ApduCodeConditionsNotSatisfied);
+        }*/
+
+        {
+
+            //sys::zemu_log_stack("SignFelt::handle::get APDU payload\x00");
+            let cdata = buffer.payload().map_err(|_| Error::DataInvalid)?;
+            let req_confirmation = buffer.p1() >= 1;
+
+            let (data_path, hash) = cdata.split_at(25);
+
+            //sys::zemu_log_stack("SignFelt::handle::read path\x00");
+            let path = BIP32Path::<BIP32_MAX_LENGTH>::read(data_path)
+                .map_err(|_| Error::DataInvalid)?;
+            verify_bip32_path(&path)?;
+
+
+            //sys::zemu_log_stack("SignFelt::handle::check hash length\x00"); 
+            if hash.len() != 32 {
+                return Err(Error::DataInvalid);
+            }
+
+            let unsigned_item = arrayref::array_ref![hash, 0, 32];
+
+            let mut ui = SignFeltUI {
+                path,
+                felt: *unsigned_item,
+            };
+
+            if req_confirmation {
+                match unsafe { ui.show(flags) } {
+                    Ok((val, code)) => {
+                        if code != Error::Success as u16 {
+                            Err(Error::try_from(code).map_err(|_| Error::ExecutionError)?)
+                        }
+                        else {
+                            *tx = val as u32;
+                            Ok(())
+                        }
+                    },
+                    Err(e) => Err(Error::ExecutionError),
+                }
+            } else {
+                let (sz, code) = ui.accept(buffer.write());
+
+                if code != Error::Success as u16 {
+                    Err(Error::try_from(code).map_err(|_| Error::ExecutionError)?)
+                } else {
+                    *tx = sz as u32;
+                    Ok(())
+                }
+            }
         }
 
-        if let Some(upload) = Uploader::new(Self).upload(&buffer)? {
+
+        /*if let Some(upload) = Uploader::new(Self).upload(&buffer)? {
             let req_confirmation = upload.p2 >= 1;
 
             let path = BIP32Path::<BIP32_MAX_LENGTH>::read(upload.first)
@@ -119,7 +171,7 @@ impl ApduHandler for SignFelt {
             }
         } else {
             Ok(())
-        }
+        }*/
     }
 }
 
